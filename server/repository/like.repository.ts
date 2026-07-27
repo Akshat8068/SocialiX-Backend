@@ -1,0 +1,53 @@
+import { tr } from "zod/locales";
+import AppDataSource from "../config/app.DataSource.js";
+import { Like } from "../entities/like.entity.js";
+
+const likeRepository=AppDataSource.getTreeRepository(Like)
+
+const findLike=async(userId:number,postId:number):Promise<Like|null>=>{
+    return await likeRepository.findOne({
+        where:{
+            user:{id:userId},
+            post:{id:postId}
+        }
+    })
+}
+
+const createLike=async(userId:number,postId:number):Promise<Like>=>{
+    const like= await likeRepository.create({
+        user:{id:userId},
+        post:{id:postId}
+    })
+    return await likeRepository.save(like)
+}
+
+const deleteLike=async(id:number)=>{
+    return await likeRepository.delete(id)
+}
+
+
+const getLikedlist=async(postId:number)=>{
+    return await likeRepository.find({
+        where:{
+            post:{id:postId}
+        },
+        relations:{
+            user:true
+        },
+        select:{
+            id:true,
+            user:{
+                id:true,username:true,
+                profilePicture:true
+            }
+        },
+        order:{
+            createdAt:"DESC"
+        }
+    })
+}
+
+
+const likeRepositoryMethod={getLikedlist,deleteLike,createLike,findLike}
+
+export default likeRepositoryMethod

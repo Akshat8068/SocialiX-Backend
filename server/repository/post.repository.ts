@@ -1,0 +1,113 @@
+
+import { ILike } from "typeorm";
+import AppDataSource from "../config/app.DataSource.js";
+import { Post } from "../entities/post.entity.js";
+import { PostMedia } from "../modules/post/postMedia.entity.js";
+
+const postMediaRepository=AppDataSource.getRepository(PostMedia)
+const postRepository=AppDataSource.getRepository(Post)
+
+const createPost=async(post:Partial<Post>):Promise<Post>=>{
+    const newPost=postRepository.create(post)
+    return await postRepository.save(newPost)
+}
+
+const findById=async(id:number):Promise<Post|null>=>{
+    return await postRepository.findOne({
+        where:{id},
+        relations:{
+            user:true,
+            media:true,
+            hashtags:{
+                hashtag:true
+            }
+        }
+    })
+}
+
+const updatePost=async(post:Partial<Post>):Promise<Post|null>=>{
+  return  await postRepository.save(post)
+}
+
+const deletePost=async(id:number):Promise<void>=>{
+    await postRepository.delete(id)
+}
+
+const getUserPosts=async(userId:number):Promise<Post[]>=>{
+    return await postRepository.find({
+        where:{
+            user:{
+                id:userId
+            }
+        },
+        relations:{
+            media:true,
+            hashtags:{
+                hashtag:true
+            }
+        },order:{
+            createdAt:"DESC"
+        }
+    })
+}
+const createMedia=async(media:Partial<PostMedia>):Promise<PostMedia>=>{
+    const newMedia=postMediaRepository.create(media)
+    return await postMediaRepository.save(newMedia)
+}
+
+
+const findByPostId=async (postId:number):Promise<PostMedia[]>=>{
+    return await postMediaRepository.find({
+        where:{
+            post:{
+                id:postId
+            }
+        }
+    })
+}
+
+const deleteByPostId=async(postId:number):Promise<void>=>{
+    await postMediaRepository.delete({
+        post:{
+            id:postId
+        }
+    })
+}
+
+
+const incrementLikeCount=async (postId: number)=> {
+  return await postRepository.increment(
+    { id: postId },
+    "likeCount",
+    1
+  )
+}
+
+const incrementCommentCount=async (postId: number)=> {
+  return await postRepository.increment(
+    { id: postId },
+    "commentCount",
+    1
+  )
+}
+const decrementLikeCount=async(postId: number) =>{
+  return await postRepository.decrement(
+    { id: postId },
+    "likeCount",
+    1
+  )
+}
+const decrementCommentCount=async(postId: number) =>{
+  return await postRepository.decrement(
+    { id: postId },
+    "commentCount",
+    1
+  )
+}
+
+
+
+
+const postRepositoryMethods={createPost,incrementCommentCount,decrementCommentCount,incrementLikeCount,decrementLikeCount,deleteByPostId,deletePost,findById,findByPostId,updatePost,createMedia,getUserPosts}
+
+export default postRepositoryMethods
