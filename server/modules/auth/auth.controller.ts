@@ -5,7 +5,7 @@ import otpRepositoryMethods from "../../repository/otp.repository.js";
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { generateAccessToken, generateRefershToken } from "../../utils/utils.js";
-import cookiesoptions from "../../config/cookie.config.js";
+import { Accesscookiesoptions, Refreshcookiesoptions } from "../../config/cookie.config.js";
 import { sendOtp } from "../../utils/utils.js";
 
 
@@ -81,11 +81,11 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
         }
         const accessToken = generateAccessToken(user.id)
         const refreshToken = generateRefershToken(user.id)
-        res.cookie("RefreshToken", refreshToken, cookiesoptions)
+        res.cookie("RefreshToken", refreshToken, Refreshcookiesoptions)
+        res.cookie("AccessToken", accessToken, Accesscookiesoptions)
         res.status(200).json({
             success: true,
             message: "User Login succesfully",
-            accessToken,
             data: {
                 id: user.id,
                 email: user.email,
@@ -112,7 +112,7 @@ const refreshToken = (req: Request, res: Response, next: NextFunction) => {
         const decoded = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET!) as { id: number }
 
         const accessToken = generateAccessToken(decoded.id)
-
+        res.cookie("AccessToken", accessToken, Accesscookiesoptions)
         return res.status(200).json({
             success: true,
             message: "Access token generated succesfull", accessToken
@@ -280,7 +280,8 @@ const resendEmail = async (req: Request, res: Response, next: NextFunction) => {
 
 const logout = (req: Request, res: Response, next: NextFunction) => {
     try {
-        res.clearCookie("RefreshToken", cookiesoptions)
+        res.clearCookie("RefreshToken", Refreshcookiesoptions)
+        res.clearCookie("AccessToken", Accesscookiesoptions)
         res.status(200).json({
             success: true,
             message: "Logout successfully"
