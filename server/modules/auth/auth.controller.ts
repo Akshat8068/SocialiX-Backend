@@ -9,15 +9,6 @@ import cookiesoptions from "../../config/cookie.config.js";
 import { sendOtp } from "../../utils/utils.js";
 
 
-const findUserByEmail = async (email: string) => {
-    const user = await userRepositoryMethods.findByEmail(email)
-
-    if (!user) {
-        throw new Error("Email not Exists")
-    }
-
-    return user
-}
 
 const register = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -26,14 +17,14 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
         const existEmail = await userRepositoryMethods.findByEmail(email)
         if (existEmail) {
             return res.status(409).json({
-                success: true,
+                success: false,
                 message: "Email Alreday Exists"
             })
         }
         const existUsername = await userRepositoryMethods.findByUserName(username)
         if (existUsername) {
             return res.status(409).json({
-                success: true,
+                success: false,
                 message: "username Alreday taken"
             })
         }
@@ -63,40 +54,45 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
 }
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-    const { email, password }: login = req.body
+    try {
+        const { email, password }: login = req.body
+        console.log(req.body);
 
-
-    const user = await findUserByEmail(email)
-
-    if (!user.isVerified) {
-        return res.status(403).json({
-            success: false,
-            message: "Please verify your email first"
-        })
-    }
-
-    const passwordCheck = await bcrypt.compare(password, user.password)
-    if (!passwordCheck) {
-        return res.status(401).json({
-            success: false,
-            message: "invalid Password "
-        })
-    }
-    const accessToken = generateAccessToken(user.id)
-    const refreshToken = generateRefershToken(user.id)
-    res.cookie("RefreshToken", refreshToken, cookiesoptions)
-    res.status(200).json({
-        success: true,
-        message: "User Login succesfully",
-        accessToken,
-        data: {
-            id: user.id,
-            email: user.email,
-            username: user.username,
-            fullname: user.fullname
+        const user = await userRepositoryMethods.findByEmail(email)
+        if (!user) {
+            return res.status(409).json({
+                success: false,
+                message: "Email Alreday Exists"
+            })
         }
-    })
+        if (!user.isVerified) {
+            return res.status(403).json({
+                success: false,
+                message: "Please verify your email first"
+            })
+        }
+
+        const passwordCheck = await bcrypt.compare(password, user.password)
+        if (!passwordCheck) {
+            return res.status(401).json({
+                success: false,
+                message: "invalid Password "
+            })
+        }
+        const accessToken = generateAccessToken(user.id)
+        const refreshToken = generateRefershToken(user.id)
+        res.cookie("RefreshToken", refreshToken, cookiesoptions)
+        res.status(200).json({
+            success: true,
+            message: "User Login succesfully",
+            accessToken,
+            data: {
+                id: user.id,
+                email: user.email,
+                username: user.username,
+                fullname: user.fullname
+            }
+        })
     }
     catch (error) {
         next(error)
@@ -104,7 +100,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 }
 
 const refreshToken = (req: Request, res: Response, next: NextFunction) => {
-    
+
     const token = req.cookies.RefreshToken
     if (!token) {
         return res.status(401).json({
@@ -128,21 +124,27 @@ const refreshToken = (req: Request, res: Response, next: NextFunction) => {
             message: "invalid refresh token "
         })
     }
-    
+
 }
 
 const forgetPassword = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-    const { email } = req.body
+    try {
+        const { email } = req.body
 
-    const user = await findUserByEmail(email)
+        const user = await userRepositoryMethods.findByEmail(email)
+        if (!user) {
+            return res.status(409).json({
+                success: false,
+                message: "Email Alreday Exists"
+            })
+        }
 
-    await sendOtp(user.id, email, "Reset your SocialiX password")
+        await sendOtp(user.id, email, "Reset your SocialiX password")
 
-    return res.status(200).json({
-        success: true,
-        message: "OTP sent to your email"
-    })
+        return res.status(200).json({
+            success: true,
+            message: "OTP sent to your email"
+        })
     }
     catch (error) {
         next(error)
@@ -150,43 +152,49 @@ const forgetPassword = async (req: Request, res: Response, next: NextFunction) =
 }
 
 const resetPassword = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-    const { email, otp, newPassword } = req.body
+    try {
+        const { email, otp, newPassword } = req.body
 
-    const user = await findUserByEmail(email)
+        const user = await userRepositoryMethods.findByEmail(email)
+        if (!user) {
+            return res.status(409).json({
+                success: false,
+                message: "Email Alreday Exists"
+            })
+        }
 
-    const otpRecord = await otpRepositoryMethods.findOtpByUserId(user.id)
-    if (!otpRecord) {
-        return res.status(400).json({
-            success: false,
-            message: "OTP not found , please request again"
+        const otpRecord = await otpRepositoryMethods.findOtpByUserId(user.id)
+        if (!otpRecord) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP not found , please request again"
+            })
+        }
+
+        if (new Date() > otpRecord.expiresAt) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP expired , please request again"
+            })
+        }
+
+        if (otpRecord.otp !== otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP"
+            })
+        }
+
+        const salt = await bcrypt.genSalt(10)
+        const hasedPassword = await bcrypt.hash(newPassword, salt)
+
+        await userRepositoryMethods.updatePassword(user.id, hasedPassword)
+        await otpRepositoryMethods.deleteOtp(otpRecord.id)
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset successfully"
         })
-    }
-
-    if (new Date() > otpRecord.expiresAt) {
-        return res.status(400).json({
-            success: false,
-            message: "OTP expired , please request again"
-        })
-    }
-
-    if (otpRecord.otp !== otp) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid OTP"
-        })
-    }
-
-    const salt = await bcrypt.genSalt(10)
-    const hasedPassword = await bcrypt.hash(newPassword, salt)
-
-    await userRepositoryMethods.updatePassword(user.id, hasedPassword)
-    await otpRepositoryMethods.deleteOtp(otpRecord.id)
-
-    return res.status(200).json({
-        success: true,
-        message: "Password reset successfully"
-    })
     }
     catch (error) {
         next(error)
@@ -194,40 +202,46 @@ const resetPassword = async (req: Request, res: Response, next: NextFunction) =>
 }
 
 const emailVerify = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-    const { email, otp } = req.body
+    try {
+        const { email, otp } = req.body
 
-    const user = await findUserByEmail(email)
+        const user = await userRepositoryMethods.findByEmail(email)
+        if (!user) {
+            return res.status(409).json({
+                success: false,
+                message: "Email Alreday Exists"
+            })
+        }
 
-    const otpRecord = await otpRepositoryMethods.findOtpByUserId(user.id)
-    if (!otpRecord) {
-        return res.status(400).json({
-            success: false,
-            message: "OTP not found , please request again"
+        const otpRecord = await otpRepositoryMethods.findOtpByUserId(user.id)
+        if (!otpRecord) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP not found , please request again"
+            })
+        }
+
+        if (new Date() > otpRecord.expiresAt) {
+            return res.status(400).json({
+                success: false,
+                message: "OTP expired , please request again"
+            })
+        }
+
+        if (otpRecord.otp !== otp) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid OTP"
+            })
+        }
+
+        await userRepositoryMethods.verifyUser(user.id)
+        await otpRepositoryMethods.deleteOtp(otpRecord.id)
+
+        return res.status(200).json({
+            success: true,
+            message: "Email verified successfully"
         })
-    }
-
-    if (new Date() > otpRecord.expiresAt) {
-        return res.status(400).json({
-            success: false,
-            message: "OTP expired , please request again"
-        })
-    }
-
-    if (otpRecord.otp !== otp) {
-        return res.status(400).json({
-            success: false,
-            message: "Invalid OTP"
-        })
-    }
-
-    await userRepositoryMethods.verifyUser(user.id)
-    await otpRepositoryMethods.deleteOtp(otpRecord.id)
-
-    return res.status(200).json({
-        success: true,
-        message: "Email verified successfully"
-    })
     }
     catch (error) {
         next(error)
@@ -235,24 +249,29 @@ const emailVerify = async (req: Request, res: Response, next: NextFunction) => {
 }
 
 const resendEmail = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-    const { email } = req.body
+    try {
+        const { email } = req.body
 
-    const user = await findUserByEmail(email)
+        const user = await userRepositoryMethods.findByEmail(email)
+        if (!user) {
+            return res.status(409).json({
+                success: false,
+                message: "Email Alreday Exists"
+            })
+        }
+        if (!user.isVerified) {
+            return res.status(400).json({
+                success: false,
+                message: "Email already verified"
+            })
+        }
 
-    if (!user.isVerified) {
-        return res.status(400).json({
-            success: false,
-            message: "Email already verified"
+        await sendOtp(user.id, email, "Verify your SocialiX account")
+
+        return res.status(200).json({
+            success: true,
+            message: "OTP resent to your email"
         })
-    }
-
-    await sendOtp(user.id, email, "Verify your SocialiX account")
-
-    return res.status(200).json({
-        success: true,
-        message: "OTP resent to your email"
-    })
     }
     catch (error) {
         next(error)
@@ -260,12 +279,12 @@ const resendEmail = async (req: Request, res: Response, next: NextFunction) => {
 }
 
 const logout = (req: Request, res: Response, next: NextFunction) => {
-    try{
-    res.clearCookie("RefreshToken", cookiesoptions)
-    res.status(200).json({
-        success: true,
-        message: "Logout successfully"
-    })
+    try {
+        res.clearCookie("RefreshToken", cookiesoptions)
+        res.status(200).json({
+            success: true,
+            message: "Logout successfully"
+        })
     }
     catch (error) {
         next(error)
