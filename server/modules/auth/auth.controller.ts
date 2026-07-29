@@ -277,7 +277,22 @@ const resendEmail = async (req: Request, res: Response, next: NextFunction) => {
         next(error)
     }
 }
-
+const me = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user=req.user
+    return res.status(200).json({
+      success: true,
+      message: "User fetched successfully",
+      data: user
+    })
+  } catch (error) {
+    next(error)
+  }
+}
 const logout = (req: Request, res: Response, next: NextFunction) => {
     try {
         res.clearCookie("RefreshToken", Refreshcookiesoptions)
@@ -293,7 +308,7 @@ const logout = (req: Request, res: Response, next: NextFunction) => {
 }
 
 const authController = {
-    register, login, refreshToken,
+    register, login,me, refreshToken,
     forgetPassword, resetPassword, resendEmail
     , emailVerify, logout
 }
