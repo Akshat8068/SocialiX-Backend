@@ -12,5 +12,6 @@ router.post("/logout", authController.logout)
 router.post("/emailVerify", authController.emailVerify)
 router.post("/resend", authController.resendEmail)
 router.post("/refreshToken", authController.refreshToken)
+router.get("/me", authMiddleware, authController.me);
 
 export default router
