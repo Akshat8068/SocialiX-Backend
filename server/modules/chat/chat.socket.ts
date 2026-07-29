@@ -18,11 +18,6 @@ export const registerChatSocket = (
   io: Server,
   socket: AuthenticatedSocket
 ) => {
-socket.onAny((event, ...args) => {
-  console.log("Event:", event);
-  console.log("Data:", args);
-});
-
   console.log(`User Connected: ${socket.id}`);
 
   // User online (JWT middleware se user mil gaya)

@@ -4,16 +4,22 @@ import { User } from "../../entities/user.entity.js"
 import { success } from "zod"
 import cloudinaryMethod from "../../utils/cloudinary.utils.js"
 import { nextTick } from "node:process"
+import postRepositoryMethods from "../../repository/post.repository.js"
+import followRepositoryMethods from "../../repository/follow.repository.js"
 
 
 
 const getProfile = async (req: Request, res: Response,next:NextFunction) => {
     try{
     const user = await userRepositoryMethods.findById(req.user.id)
+    const postCount= await postRepositoryMethods.postsCount(req.user.id)
+    const followingCount=await followRepositoryMethods.getFollowingCount(req.user.id)
+    const followercount=await followRepositoryMethods.getFollowerCount(req.user.id)
+    const post=await postRepositoryMethods.findByUserId(req.user.id)
     return res.status(200).json({
         success: true,
         message: "user profile",
-        data: user,
+        data: {...user,postCount,followercount,followingCount,post},
     })
     } catch (error) {
         next(error)
@@ -34,11 +40,11 @@ try{
     }
     const updateData = { ...req.body };
 
-    if (updateData.bio === "") {
+    if (updateData.bio === "" && updateData.bio=== undefined) {
         updateData.bio = null;
     }
 
-    if (updateData.website === "") {
+    if (updateData.website === "" && updateData.website === undefined ) {
         updateData.website = null;
     }
     const updatedUser = await userRepositoryMethods.updateProfile(
