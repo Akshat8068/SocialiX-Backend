@@ -138,8 +138,23 @@ const getFriends=async(userId:number):Promise<Follow[]>=>{
 }
 
 
+const getFollowingCount=async(id:number)=>{
+    return await followRepository.count({
+  where: {
+    following: {id}
+  },
+})
+}
+const getFollowerCount=async(id:number)=>{
+    return await followRepository.count({
+        where:{
+            follower:{id}
+        }
+    })
+}
 
-const followRepositoryMethods = { findRelation,findById, createFollow,deleteFollow,
+
+const followRepositoryMethods = {getFollowerCount,getFollowingCount, findRelation,findById, createFollow,deleteFollow,
     updateStatus,getFollowers,getFollowing,getPendingRequests,
     getSentRequests,getMutualFriends,getFriends,isFollowing,isFriend
  }

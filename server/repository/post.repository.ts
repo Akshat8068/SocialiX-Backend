@@ -24,6 +24,25 @@ const findById=async(id:number):Promise<Post|null>=>{
         }
     })
 }
+const findByUserId = async (id: number): Promise<Post[]> => {
+  return await postRepository.find({
+    where: {
+      user: {
+        id
+      },
+    },
+    relations: {
+      user: true,
+      media: true,
+      hashtags: {
+        hashtag: true,
+      },
+    },
+    order: {
+      createdAt: "DESC",
+    },
+  });
+};
 
 const updatePost=async(post:Partial<Post>):Promise<Post|null>=>{
   return  await postRepository.save(post)
@@ -104,10 +123,16 @@ const decrementCommentCount=async(postId: number) =>{
     1
   )
 }
+const postsCount=async(id:number)=>{
+    return await postRepository.count({
+        where:{
+            user:{id}
+        }
+    })
+}
 
 
-
-
-const postRepositoryMethods={createPost,incrementCommentCount,decrementCommentCount,incrementLikeCount,decrementLikeCount,deleteByPostId,deletePost,findById,findByPostId,updatePost,createMedia,getUserPosts}
+const postRepositoryMethods={createPost,postsCount,findByUserId,
+    incrementCommentCount,decrementCommentCount,incrementLikeCount,decrementLikeCount,deleteByPostId,deletePost,findById,findByPostId,updatePost,createMedia,getUserPosts}
 
 export default postRepositoryMethods
