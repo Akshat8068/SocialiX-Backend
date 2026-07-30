@@ -3,8 +3,7 @@ import type { Request, Response, NextFunction } from "express"
 
 
 export const userProfileValidation = z.object({
-    fullname: z.string(),
-    username: z.string().optional(),
+    fullname: z.string().optional(),
     bio: z.string().max(250, "Max 250 words only").optional(),
     website: z.string().url("Invalid website URL").optional(),
     accountType: z.enum(["PUBLIC", "PRIVATE"]).optional(),

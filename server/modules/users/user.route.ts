@@ -8,6 +8,8 @@ const router = Router()
 
 
 router.get("/profile",authMiddleware,userController.getProfile)
+router.get("/otherUsers",authMiddleware,userController.getAllUsers)
+router.get("/otherUsers/:userId",authMiddleware,userController.getUserProfile)
 router.put("/profile",authMiddleware,validate(userProfileValidation),userController.updateProfile)
 router.put("/profile-picture",authMiddleware, upload.single("profilePicture") ,userController.updateProfilePicture)
 router.delete("/profile-picture",authMiddleware,userController.removeProfilePicture)

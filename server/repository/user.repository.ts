@@ -70,10 +70,12 @@ const removeProfilePicture = async (id: number) => {
         }
     )
 }
+const getAllUsers=async()=>{
+    return await userRepository.find()
+}
 
 
-
-const userRepositoryMethods = { findByEmail, findById, findByUserName, createUser,
+const userRepositoryMethods = { findByEmail,getAllUsers,findById, findByUserName, createUser,
      verifyUser, updatePassword,
     updateProfile,updateProfilePicture,removeProfilePicture }
 export default userRepositoryMethods
