@@ -1,8 +1,9 @@
 
-import { ILike } from "typeorm";
+import { ILike, In } from "typeorm";
 import AppDataSource from "../config/app.DataSource.js";
 import { Post } from "../entities/post.entity.js";
 import { PostMedia } from "../modules/post/postMedia.entity.js";
+import { FollowStatus } from "../types/types.js";
 
 const postMediaRepository=AppDataSource.getRepository(PostMedia)
 const postRepository=AppDataSource.getRepository(Post)
@@ -60,7 +61,8 @@ const getUserPosts=async(userId:number):Promise<Post[]>=>{
             }
         },
         relations:{
-            media:true,
+          media: true,
+          user:true,
             hashtags:{
                 hashtag:true
             }
@@ -131,8 +133,37 @@ const postsCount=async(id:number)=>{
     })
 }
 
+const getHomeFeed = async (userId: number): Promise<Post[]> => {
+  return await postRepository
+    .createQueryBuilder("post")
+
+    .leftJoinAndSelect("post.user", "user")
+    .leftJoinAndSelect("post.media", "media")
+    .leftJoinAndSelect("post.hashtags", "postHashtags")
+    .leftJoinAndSelect("postHashtags.hashtag", "hashtag")
+
+    .innerJoin(
+      "follows",
+      "follow",
+      `
+      follow.following_id = user.id
+      AND follow.follower_id = :userId
+      AND follow.status = :status
+      `,
+      {
+        userId,
+        status: FollowStatus.ACCEPTED,
+      }
+    )
+
+    .orderBy("post.createdAt", "DESC")
+
+    .getMany();
+};
+
+
 
 const postRepositoryMethods={createPost,postsCount,findByUserId,
-    incrementCommentCount,decrementCommentCount,incrementLikeCount,decrementLikeCount,deleteByPostId,deletePost,findById,findByPostId,updatePost,createMedia,getUserPosts}
+    incrementCommentCount,decrementCommentCount,incrementLikeCount, getHomeFeed,decrementLikeCount,deleteByPostId,deletePost,findById,findByPostId,updatePost,createMedia,getUserPosts}
 
 export default postRepositoryMethods

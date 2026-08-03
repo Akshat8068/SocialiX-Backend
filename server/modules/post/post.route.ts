@@ -11,7 +11,7 @@ router.put("/:postId", authMiddleware,upload.array("media",10), postController.u
 router.delete("/:postId", authMiddleware, postController.deletePost)
 
 
-
+router.get("/feed",authMiddleware,postController.getHomeFeed)
 router.get("/:userId/posts",authMiddleware,postController.getUserPosts)
 router.get("/:userId/post/:postId",authMiddleware,postController.getUserPost)
 
