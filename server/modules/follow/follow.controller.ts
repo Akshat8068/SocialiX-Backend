@@ -316,41 +316,10 @@ const getSentRequest = async (req: Request, res: Response,next:NextFunction) => 
         next(error)
     }
 }
-
-const mutualFollow = async (req: Request, res: Response,next:NextFunction) => {
-    try{
-    const userId=req.user.id
-    const otherUserId=Number(req.params.userId)
-    const mutualFriends=await followRepositoryMethods.getMutualFriends(userId,otherUserId)
-    return res.status(200).json({success:true,
-        count:mutualFriends.length,
-        data:mutualFriends
-    })
-    }catch(error){
-        next(error)
-    }
-}
-
-const getFriends=async(req:Request,res:Response,next:NextFunction)=>{
-    try{
-    const userId=req.user.id
-
-    const friends=await followRepositoryMethods.getFriends(userId)
-    return res.status(200).json({
-        success:true,
-        message:"Friends List",
-        count:friends.length,
-        data:friends
-    })
-    }catch(error){
-        next(error)
-    }
-}
-
 const followContoller = {
-    followUser, unFollowUser, mutualFollow, getSentRequest
+    followUser, unFollowUser, getSentRequest
     , getPendingRequest, getFollowers, getFollowing, removeFollower,
-    cancleRequest, acceptRequest, rejectRequest,getFriends
+    cancleRequest, acceptRequest, rejectRequest
 }
 export default followContoller
 

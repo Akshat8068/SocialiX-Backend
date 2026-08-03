@@ -21,10 +21,4 @@ router.get("/requests",authMiddleware,followContoller.getPendingRequest)
 
 router.get("/sent-requests",authMiddleware,followContoller.getSentRequest)
 
-router.get("/mutual/:userId",authMiddleware,followContoller.mutualFollow)
-
-router.get("/friends",authMiddleware,followContoller.getFriends)
-
-
-
 export default router

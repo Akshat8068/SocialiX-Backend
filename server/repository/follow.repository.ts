@@ -105,37 +105,8 @@ const getSentRequests=async(userId: number): Promise<Follow[]> => {
         .getMany()
 
 }
-const getMutualFriends=async(userId:number,otherUserId:number)=>{
-    return await followRepository.createQueryBuilder("follow")
-    .leftJoinAndSelect("follow.following","following").where(qb=>{
-        const subQuery=qb.subQuery().select("f.following_id").from(Follow,"f")
-        .where("f.follower_id=:userId").andWhere("f.status=:status")
-        .getQuery()
 
-        return `follow.following_id IN ${subQuery}`
-    })
-    .andWhere("follow.follower_id=:otherUserId")
-    .andWhere("follow.status=:status")
-    .setParameters({userId,otherUserId,status:FollowStatus.ACCEPTED})
-    .getMany()
-}
-const getFriends=async(userId:number):Promise<Follow[]>=>{
-    return await followRepository.createQueryBuilder("follow")
-    .leftJoinAndSelect("follow.following","following")
-    .where("follow.follower_id=:userId",{userId})
-    .andWhere("follow.status=:status",{
-        status:FollowStatus.ACCEPTED
-    }).andWhere(qb=>{
-        const subQuery=qb.subQuery().select("f.follower_id")
-        .from(Follow,"f")
-        .where("f.following_id=:userId")
-        .andWhere("f.status=:status")
-        .getQuery()
 
-        return `follow.following_id In ${subQuery}`
-    }).setParameter("userId",userId)
-    .setParameter("status",FollowStatus.ACCEPTED).getMany()
-}
 
 
 const getFollowingCount=async(id:number)=>{
@@ -156,7 +127,7 @@ const getFollowerCount=async(id:number)=>{
 
 const followRepositoryMethods = {getFollowerCount,getFollowingCount, findRelation,findById, createFollow,deleteFollow,
     updateStatus,getFollowers,getFollowing,getPendingRequests,
-    getSentRequests,getMutualFriends,getFriends,isFollowing,isFriend
+    getSentRequests,isFollowing,isFriend
  }
 
 export default followRepositoryMethods

@@ -9,6 +9,9 @@ router.post("/", authMiddleware,upload.array("media",10), postController.createP
 router.get("/:postId",authMiddleware,postController.getPost)
 router.put("/:postId", authMiddleware,upload.array("media",10), postController.updatePost)
 router.delete("/:postId", authMiddleware, postController.deletePost)
+
+
+
 router.get("/:userId/posts",authMiddleware,postController.getUserPosts)
 router.get("/:userId/post/:postId",authMiddleware,postController.getUserPost)
 
