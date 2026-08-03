@@ -5,6 +5,7 @@ import hashTagRepositoryMethods from "../../repository/hashTag.repository.js"
 import cloudinaryMethod from "../../utils/cloudinary.utils.js"
 import followRepositoryMethods from "../../repository/follow.repository.js"
 import { PostVisibility } from "../../types/types.js"
+import likeRepositoryMethod from "../../repository/like.repository.js"
 
 
 const createPost = async (req: Request, res: Response, next: NextFunction) => {
@@ -66,34 +67,123 @@ const createPost = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 const getUserPosts = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-    const userId = Number(req.params.userId)
-    const currUser = req.user
+    try {
+        const userId = Number(req.params.userId)
+        const currUser = req.user
 
-    if (!userId) {
-        return res.status(400).json({
-            success: false,
-            message: "User id is required",
-        })
-    }
-    const user = await userRepositoryMethods.findById(userId)
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "User id is required",
+            })
+        }
+        const user = await userRepositoryMethods.findById(userId)
 
-    if (!user) {
-        return res.status(404).json({
-            success: false,
-            message: "User not found",
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            })
+        }
+        const posts = await postRepositoryMethods.getUserPosts(userId)
+        for (const post of posts) {
+            if (post.user.id !== currUser.id) {
+                switch (post.visibility) {
+                    case PostVisibility.PUBLIC:
+                        break;
+
+                    case PostVisibility.FOLLOWERS: {
+                        const isFollower = await followRepositoryMethods.isFollowing(
+                            currUser.id,
+                            post.user.id
+                        );
+
+                        if (!isFollower) {
+                            return res.status(403).json({
+                                success: false,
+                                message: "This post is only visible to followers",
+                            });
+                        }
+                        break;
+                    }
+
+
+                    default:
+                        return res.status(400).json({
+                            success: false,
+                            message: "Invalid post visibility",
+                        })
+                }
+            }
+        }
+        const postIds = posts.map((post) => post.id);
+
+        const likedPostIds = await likeRepositoryMethod.findLikedPostIds(
+            currUser.id,
+            postIds
+        );
+
+        const data = posts.map((post) => ({
+            ...post,
+            isLiked: likedPostIds.includes(post.id),
+        }));
+        return res.status(200).json({
+            success: true,
+            message: "User posts fetched successfully",
+            data: data
         })
+    } catch (error) {
+        next(error)
     }
-    const posts = await postRepositoryMethods.getUserPosts(userId)
-    for (const post of posts) {
-        if (post.user.id !== currUser.id) {
+
+}
+const getUserPost = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const userId = Number(req.params.userId)
+        const postId = Number(req.params.postId)
+        const currUser = req.user.id
+
+        if (!userId || !postId) {
+            return res.status(400).json({
+                success: false,
+                message: "User id and Post id are required",
+            })
+        }
+
+
+        const user = await userRepositoryMethods.findById(userId)
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            })
+        }
+        const post = await postRepositoryMethods.findById(postId);
+
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found",
+            })
+        }
+        if (post.user.id !== userId) {
+            return res.status(404).json({
+                success: false,
+                message: "Post does not belong to this user",
+            })
+        }
+
+
+
+        if (post.user.id !== currUser) {
             switch (post.visibility) {
                 case PostVisibility.PUBLIC:
                     break;
 
                 case PostVisibility.FOLLOWERS: {
                     const isFollower = await followRepositoryMethods.isFollowing(
-                        currUser.id,
+                        currUser,
                         post.user.id
                     );
 
@@ -106,21 +196,6 @@ const getUserPosts = async (req: Request, res: Response, next: NextFunction) => 
                     break;
                 }
 
-                case PostVisibility.FRIENDS: {
-                    const isFriend = await followRepositoryMethods.isFriend(
-                        currUser.id,
-                        post.user.id
-                    );
-
-                    if (!isFriend) {
-                        return res.status(403).json({
-                            success: false,
-                            message: "This post is only visible to friends",
-                        })
-                    }
-                    break;
-                }
-
                 default:
                     return res.status(400).json({
                         success: false,
@@ -128,276 +203,211 @@ const getUserPosts = async (req: Request, res: Response, next: NextFunction) => 
                     })
             }
         }
-    }
-    return res.status(200).json({
-        success: true,
-        message: "User posts fetched successfully",
-        data: posts,
-    })
+
+        const liked = await likeRepositoryMethod.findLike(currUser, post.id);
+
+        return res.status(200).json({
+            success: true,
+            message: "Post fetched successfully",
+            data: {
+                ...post,
+                isLiked: !!liked,
+            },
+        });
     } catch (error) {
-        next(error)
-    }
-
-}
-const getUserPost = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-    const userId = Number(req.params.userId)
-    const postId = Number(req.params.postId)
-    const currUser = req.user.id
-
-    if (!userId || !postId) {
-        return res.status(400).json({
-            success: false,
-            message: "User id and Post id are required",
-        })
-    }
-
-
-    const user = await userRepositoryMethods.findById(userId)
-
-    if (!user) {
-        return res.status(404).json({
-            success: false,
-            message: "User not found",
-        })
-    }
-    const post = await postRepositoryMethods.findById(postId);
-
-    if (!post) {
-        return res.status(404).json({
-            success: false,
-            message: "Post not found",
-        })
-    }
-    if (post.user.id !== userId) {
-        return res.status(404).json({
-            success: false,
-            message: "Post does not belong to this user",
-        })
-    }
-
-
-
-    if (post.user.id !== currUser) {
-        switch (post.visibility) {
-            case PostVisibility.PUBLIC:
-                break;
-
-            case PostVisibility.FOLLOWERS: {
-                const isFollower = await followRepositoryMethods.isFollowing(
-                    currUser,
-                    post.user.id
-                );
-
-                if (!isFollower) {
-                    return res.status(403).json({
-                        success: false,
-                        message: "This post is only visible to followers",
-                    });
-                }
-                break;
-            }
-
-            case PostVisibility.FRIENDS: {
-                const isFriend = await followRepositoryMethods.isFriend(
-                    currUser,
-                    post.user.id
-                );
-
-                if (!isFriend) {
-                    return res.status(403).json({
-                        success: false,
-                        message: "This post is only visible to friends",
-                    })
-                }
-                break;
-            }
-
-            default:
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid post visibility",
-                })
-        }
-    }
-
-
-    return res.status(200).json({
-        success: true,
-        message: "Post fetched successfully",
-        data: post,
-    })
-} catch (error) {
         next(error)
     }
 }
 const getPost = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-    const postId = Number(req.params.postId)
-    const userId = req.user.id
-    const post = await postRepositoryMethods.findById(postId)
-    if (!post) {
-        return res.status(404).json({
-            success: false,
-            message: "Post not found",
-        })
-    }
-    if (post.user.id !== userId) {
-        switch (post.visibility) {
-            case PostVisibility.PUBLIC:
-                break;
-
-            case PostVisibility.FOLLOWERS: {
-                const isFollower = await followRepositoryMethods.isFollowing(
-                    userId,
-                    post.user.id
-                );
-
-                if (!isFollower) {
-                    return res.status(403).json({
-                        success: false,
-                        message: "This post is only visible to followers",
-                    });
-                }
-                break;
-            }
-
-            case PostVisibility.FRIENDS: {
-                const isFriend = await followRepositoryMethods.isFriend(
-                    userId,
-                    post.user.id
-                );
-
-                if (!isFriend) {
-                    return res.status(403).json({
-                        success: false,
-                        message: "This post is only visible to friends",
-                    })
-                }
-                break;
-            }
-
-            default:
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid post visibility",
-                })
+    try {
+        const postId = Number(req.params.postId)
+        const userId = req.user.id
+        const post = await postRepositoryMethods.findById(postId)
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found",
+            })
         }
-    }
+        if (post.user.id !== userId) {
+            switch (post.visibility) {
+                case PostVisibility.PUBLIC:
+                    break;
 
-    return res.status(200).json({
-        success: true,
-        message: "Post found",
-        data: post
-    })
+                case PostVisibility.FOLLOWERS: {
+                    const isFollower = await followRepositoryMethods.isFollowing(
+                        userId,
+                        post.user.id
+                    );
+
+                    if (!isFollower) {
+                        return res.status(403).json({
+                            success: false,
+                            message: "This post is only visible to followers",
+                        });
+                    }
+                    break;
+                }
+                default:
+                    return res.status(400).json({
+                        success: false,
+                        message: "Invalid post visibility",
+                    })
+            }
+        }
+        const liked = await likeRepositoryMethod.findLike(userId, post.id)
+        return res.status(200).json({
+            success: true,
+            message: "Post found",
+            data: {
+                ...post,
+                isLiked: !!liked,
+            }
+        })
     } catch (error) {
         next(error)
     }
 }
 const updatePost = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-    const postId = Number(req.params.postId)
-    const userId = req.user.id
+    try {
+        const postId = Number(req.params.postId)
+        const userId = req.user.id
 
-    const { caption, visibility, hashtags } = req.body
+        const { caption, visibility, hashtags } = req.body
 
-    const post = await postRepositoryMethods.findById(postId)
-    if (!post) {
-        return res.status(404).json({
-            success: false,
-            message: "Post not found",
-        })
-    }
-    if (post.user.id !== userId) {
-        return res.status(403).json({
-            success: false,
-            message: "You are not allowed to update this post",
-        })
-    }
-    if (caption !== undefined) {
-        post.caption = caption.trim() || null
-    }
-    if (visibility !== undefined) {
-        post.visibility = visibility
-    }
-    if (hashtags !== undefined) {
-        const hashtagIds: number[] =
-            typeof hashtags === "string"
-                ? JSON.parse(hashtags)
-                : hashtags
-        await hashTagRepositoryMethods.deleteByPostId(postId)
-        const hashtagList = await hashTagRepositoryMethods.findByIds(hashtagIds)
-
-        const postHashtags = hashtagList.map((hashtag) => ({
-            post,
-            hashtag,
-        }))
-
-
-        if (postHashtags.length > 0) {
-            await hashTagRepositoryMethods.attachHashTags(postHashtags)
+        const post = await postRepositoryMethods.findById(postId)
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found",
+            })
         }
-    }
+        if (post.user.id !== userId) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not allowed to update this post",
+            })
+        }
+        if (caption !== undefined) {
+            post.caption = caption.trim() || null
+        }
+        if (visibility !== undefined) {
+            post.visibility = visibility
+        }
+        if (hashtags !== undefined) {
+            const hashtagIds: number[] =
+                typeof hashtags === "string"
+                    ? JSON.parse(hashtags)
+                    : hashtags
+            await hashTagRepositoryMethods.deleteByPostId(postId)
+            const hashtagList = await hashTagRepositoryMethods.findByIds(hashtagIds)
 
-    const updatedPost = await postRepositoryMethods.updatePost(post)
+            const postHashtags = hashtagList.map((hashtag) => ({
+                post,
+                hashtag,
+            }))
 
-    return res.status(200).json({
-        success: true,
-        message: "Post updated successfully",
-        data: updatedPost,
-    })
-} catch (error) {
+
+            if (postHashtags.length > 0) {
+                await hashTagRepositoryMethods.attachHashTags(postHashtags)
+            }
+        }
+
+        const updatedPost = await postRepositoryMethods.updatePost(post)
+
+        return res.status(200).json({
+            success: true,
+            message: "Post updated successfully",
+            data: updatedPost,
+        })
+    } catch (error) {
         next(error)
     }
 }
 const deletePost = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-    const postId = Number(req.params.postId)
-    const userId = req.user.id
+    try {
+        const postId = Number(req.params.postId)
+        const userId = req.user.id
 
-    if (!postId) {
-        return res.status(400).json({
-            success: false,
-            message: "Post id is required"
+        if (!postId) {
+            return res.status(400).json({
+                success: false,
+                message: "Post id is required"
+            })
+        }
+
+        const post = await postRepositoryMethods.findById(postId)
+
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: "Post not found",
+            })
+        }
+
+        if (post.user.id !== userId) {
+            return res.status(403).json({
+                success: false,
+                message: "You are not allowed to delete this post",
+            })
+        }
+
+        const medias = await postRepositoryMethods.findByPostId(postId)
+
+        for (const media of medias) {
+            await cloudinaryMethod.deleteFromCloudinary(media.publicId)
+        }
+
+        await postRepositoryMethods.deleteByPostId(postId)
+
+        await hashTagRepositoryMethods.deleteByPostId(postId)
+
+        await postRepositoryMethods.deletePost(postId)
+
+        return res.status(200).json({
+            success: true,
+            message: "Post deleted successfully",
         })
+    } catch (error) {
+        next(error)
     }
+}
+const getHomeFeed = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const currentUserId = req.user.id
 
-    const post = await postRepositoryMethods.findById(postId)
+        const following = await followRepositoryMethods.getFollowing(currentUserId)
 
-    if (!post) {
-        return res.status(404).json({
-            success: false,
-            message: "Post not found",
+        if (following.length === 0) {
+            return res.status(200).json({
+                success: true,
+                message: "No posts found",
+                data: []
+            })
+        }
+        const posts = await postRepositoryMethods.getHomeFeed(req.user.id)
+        const postIds = posts.map((post) => post.id);
+
+        const likedPostIds = await likeRepositoryMethod.findLikedPostIds(
+            currentUserId,
+            postIds
+        );
+
+        const data = posts.map((post) => ({
+            ...post,
+            isLiked: likedPostIds.includes(post.id),
+        }));
+
+        return res.status(200).json({
+            success: true,
+            message: "Home feed fetched successfully",
+            data: data
         })
-    }
-
-    if (post.user.id !== userId) {
-        return res.status(403).json({
-            success: false,
-            message: "You are not allowed to delete this post",
-        })
-    }
-
-    const medias = await postRepositoryMethods.findByPostId(postId)
-
-    for (const media of medias) {
-        await cloudinaryMethod.deleteFromCloudinary(media.publicId)
-    }
-
-    await postRepositoryMethods.deleteByPostId(postId)
-
-    await hashTagRepositoryMethods.deleteByPostId(postId)
-
-    await postRepositoryMethods.deletePost(postId)
-
-    return res.status(200).json({
-        success: true,
-        message: "Post deleted successfully",
-    })
     } catch (error) {
         next(error)
     }
 }
 
-const postController = { createPost, getUserPosts, updatePost, getUserPost, getPost, deletePost }
+
+const postController = { createPost, getHomeFeed, getUserPosts, updatePost, getUserPost, getPost, deletePost }
 export default postController

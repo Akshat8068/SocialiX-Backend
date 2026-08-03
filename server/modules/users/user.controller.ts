@@ -3,6 +3,7 @@ import userRepositoryMethods from "../../repository/user.repository.js"
 import cloudinaryMethod from "../../utils/cloudinary.utils.js"
 import postRepositoryMethods from "../../repository/post.repository.js"
 import followRepositoryMethods from "../../repository/follow.repository.js"
+import likeRepositoryMethod from "../../repository/like.repository.js"
 
 
 
@@ -12,11 +13,29 @@ const getProfile = async (req: Request, res: Response, next: NextFunction) => {
         const postCount = await postRepositoryMethods.postsCount(req.user.id)
         const followingCount = await followRepositoryMethods.getFollowingCount(req.user.id)
         const followercount = await followRepositoryMethods.getFollowerCount(req.user.id)
-        const post = await postRepositoryMethods.findByUserId(req.user.id)
+        const posts = await postRepositoryMethods.findByUserId(req.user.id);
+
+        const postIds = posts.map((post) => post.id);
+
+        const likedPostIds = await likeRepositoryMethod.findLikedPostIds(
+            req.user.id,
+            postIds
+        );
+
+        const post = posts.map((post) => ({
+            ...post,
+            isLiked: likedPostIds.includes(post.id),
+        }))
         return res.status(200).json({
             success: true,
             message: "user profile",
-            data: { ...user, postCount, followercount, followingCount, post },
+            data: {
+                ...user,
+                postCount,
+                followercount,
+                followingCount,
+                post,
+            },
         })
     } catch (error) {
         next(error)
