@@ -217,180 +217,6 @@ const getUserPost = async (req: Request, res: Response, next: NextFunction) => {
     } catch (error) {
         next(error)
     }
-<<<<<<< HEAD
-
-}
-const getPosts=async(req:Request,res:Response,next:NextFunction)=>{
-    try {
-        const userId=req.user.id
-        console.log(userId)
-        const posts=await postRepositoryMethods.findByUserId(userId)
-        return res.status(200).json({
-            success:true,
-            message:"ALl posts",
-            data:posts
-        })
-    } catch (error) {
-        next(error)
-    }
-}
-
-const getUserPost = async (req: Request, res: Response, next: NextFunction) => {
-    try{
-    const userId = Number(req.params.userId)
-    const postId = Number(req.params.postId)
-    const currUser = req.user.id
-
-    if (!userId || !postId) {
-        return res.status(400).json({
-            success: false,
-            message: "User id and Post id are required",
-        })
-    }
-
-
-    const user = await userRepositoryMethods.findById(userId)
-
-    if (!user) {
-        return res.status(404).json({
-            success: false,
-            message: "User not found",
-        })
-    }
-    const post = await postRepositoryMethods.findById(postId);
-
-    if (!post) {
-        return res.status(404).json({
-            success: false,
-            message: "Post not found",
-        })
-    }
-    if (post.user.id !== userId) {
-        return res.status(404).json({
-            success: false,
-            message: "Post does not belong to this user",
-        })
-    }
-
-
-
-    if (post.user.id !== currUser) {
-        switch (post.visibility) {
-            case PostVisibility.PUBLIC:
-                break;
-
-            case PostVisibility.FOLLOWERS: {
-                const isFollower = await followRepositoryMethods.isFollowing(
-                    currUser,
-                    post.user.id
-                );
-
-                if (!isFollower) {
-                    return res.status(403).json({
-                        success: false,
-                        message: "This post is only visible to followers",
-                    });
-                }
-                break;
-            }
-
-            case PostVisibility.FRIENDS: {
-                const isFriend = await followRepositoryMethods.isFriend(
-                    currUser,
-                    post.user.id
-                );
-
-                if (!isFriend) {
-                    return res.status(403).json({
-                        success: false,
-                        message: "This post is only visible to friends",
-                    })
-                }
-                break;
-            }
-
-            default:
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid post visibility",
-                })
-        }
-    }
-
-
-    return res.status(200).json({
-        success: true,
-        message: "Post fetched successfully",
-        data: post,
-    })
-} catch (error) {
-        next(error)
-    }
-}
-// const getPost = async (req: Request, res: Response, next: NextFunction) => {
-//     try{
-//     const postId = Number(req.params.postId)
-//     const userId = req.user.id
-//     const post = await postRepositoryMethods.findById(postId)
-//     if (!post) {
-//         return res.status(404).json({
-//             success: false,
-//             message: "Post not found",
-//         })
-//     }
-//     if (post.user.id !== userId) {
-//         switch (post.visibility) {
-//             case PostVisibility.PUBLIC:
-//                 break;
-
-//             case PostVisibility.FOLLOWERS: {
-//                 const isFollower = await followRepositoryMethods.isFollowing(
-//                     userId,
-//                     post.user.id
-//                 );
-
-//                 if (!isFollower) {
-//                     return res.status(403).json({
-//                         success: false,
-//                         message: "This post is only visible to followers",
-//                     });
-//                 }
-//                 break;
-//             }
-
-//             case PostVisibility.FRIENDS: {
-//                 const isFriend = await followRepositoryMethods.isFriend(
-//                     userId,
-//                     post.user.id
-//                 );
-
-//                 if (!isFriend) {
-//                     return res.status(403).json({
-//                         success: false,
-//                         message: "This post is only visible to friends",
-//                     })
-//                 }
-//                 break;
-//             }
-
-//             default:
-//                 return res.status(400).json({
-//                     success: false,
-//                     message: "Invalid post visibility",
-//                 })
-//         }
-//     }
-
-//     return res.status(200).json({
-//         success: true,
-//         message: "Post found",
-//         data: post
-//     })
-//     } catch (error) {
-//         next(error)
-//     }
-// }
-=======
 }
 const getPost = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -442,7 +268,6 @@ const getPost = async (req: Request, res: Response, next: NextFunction) => {
         next(error)
     }
 }
->>>>>>> de63252f6537c0d9fe95a5c722c1b7b976cb5cd5
 const updatePost = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const postId = Number(req.params.postId)
@@ -583,10 +408,6 @@ const getHomeFeed = async (req: Request, res: Response, next: NextFunction) => {
     }
 }
 
-<<<<<<< HEAD
-const postController = { createPost, getUserPosts,getPosts,getPost, updatePost, getUserPost,  deletePost }
-=======
 
 const postController = { createPost, getHomeFeed, getUserPosts, updatePost, getUserPost, getPost, deletePost }
->>>>>>> de63252f6537c0d9fe95a5c722c1b7b976cb5cd5
 export default postController
