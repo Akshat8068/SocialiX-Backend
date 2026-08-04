@@ -1,5 +1,6 @@
 import type { Socket } from "socket.io";
 import jwt from "jsonwebtoken";
+import {parseCookie} from "cookie";
 import userRepositoryMethods from "../repository/user.repository.js";
 interface AuthenticatedSocket extends Socket {
   user: {
@@ -15,9 +16,9 @@ export const socketAuthMiddleware = async(
   next: (err?: Error) => void
 ) => {
   try {
-     const token= socket.handshake.auth.token ||
-  socket.handshake.headers.authorization?.replace("Bearer ", "") ||
-  socket.handshake.query.token;
+     const cookies = parseCookie(socket.handshake.headers.cookie || "");
+
+    const token = cookies.AccessToken
 
     if (!token) {
       return next(new Error("Access token is required"));

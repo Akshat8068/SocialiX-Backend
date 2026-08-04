@@ -29,8 +29,8 @@ export const registerChatSocket = (
   socket.on("joinConversation", async (data) => {
 
     const result = joinConversationSchema.safeParse(data);
- console.log("joinConversation:", data);
- console.log("joinConversation event received:", data);
+    console.log("joinConversation:", data);
+    console.log("joinConversation event received:", data);
     if (!result.success) {
       return socket.emit("error", {
         message: result.error.issues[0]?.message,
@@ -47,7 +47,7 @@ export const registerChatSocket = (
 
   // Send Message
   socket.on("sendMessage", async (data) => {
- console.log("sendMessage event:", data);
+    console.log("sendMessage event:", data);
     const result = sendMessageSchema.safeParse(data);
 
     if (!result.success) {
