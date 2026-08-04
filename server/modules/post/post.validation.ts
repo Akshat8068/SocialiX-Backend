@@ -17,7 +17,7 @@ export const createPostSchema = z.object({
     .optional(),
 })
 
-export const updatePostSchema = z.object({
+export const PostSchema = z.object({
   caption: z
     .string()
     .trim()
@@ -30,20 +30,20 @@ export const updatePostSchema = z.object({
 
   hashtags: z
     .array(z.number().int().positive())
-    .optional(),
+    .optional()
 })
 
 export const validate = (schema: z.ZodType) => {
-    return (req: Request, res: Response, next: NextFunction) => {
-        const result = schema.safeParse(req.body)
-        if (!result.success) {
-            return res.status(400).json({
-                success: false,
-                message: result.error.issues[0]?.message
-            })
-        }
-        req.body = result.data
-        next()
+  return (req: Request, res: Response, next: NextFunction) => {
+    const result = schema.safeParse(req.body)
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.error.issues[0]?.message
+      })
     }
+    req.body = result.data
+    next()
+  }
 }
 
