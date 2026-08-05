@@ -12,7 +12,7 @@ export const onlineUsers = new Map<number, string>();
 export const initializeSocket = (httpServer: HttpServer): Server => {
   io = new Server(httpServer, {
     cors: {
-      origin: "*",
+      origin: "http://localhost:3000",
       credentials: true,
     },
   });

@@ -16,35 +16,42 @@ const joinConversation = async (io: Server, socket: Socket, data: JoinConversati
   console.log(
     `${socket.id} joined ${roomName}`
   )
+  
   socket.emit("joinedConversation", {
     conversationId,
     message: "Joined conversation successfully",
   })
-
+console.log(socket.id, "joined", roomName)
 }
 
 const sendMessage = async (io: Server, socket: Socket, data: SendMessagePayload) => {
 
   const senderId = (socket as AuthenticatedSocket).user.id
 
-  const { conversationId, receiverId, content, } = data
+  const { conversationId, content, } = data
   console.log("Inside sendMessage controller");
   console.log(data);
-  const message =
-    await messageRepositoryMethods.createMessage({
-      conversation: {
-        id: conversationId,
-      },
-      sender: {
-        id: senderId,
-      },
-      content,
-      seenAt: null,
-      isDeletedForEveryone: false,
-      deletedAt: null,
-    })
+  const createdMessage = await messageRepositoryMethods.createMessage({
+    conversation: {
+      id: conversationId,
+    },
+    sender: {
+      id: senderId,
+    },
+    content,
+    seenAt: null,
+    isDeletedForEveryone: false,
+    deletedAt: null,
+  })
 
-  console.log(message);
+  console.log(createdMessage);
+
+  const message = await messageRepositoryMethods.findMessageById(
+    createdMessage.id
+  )
+  if (!message) {
+    return
+  }
   await conversationRepositoryMethods.updateConversation({
     id: conversationId,
     lastMessage: content,
@@ -52,32 +59,25 @@ const sendMessage = async (io: Server, socket: Socket, data: SendMessagePayload)
   })
   console.log("Conversation Updated");
 
-
   io.to(`conversation-${conversationId}`).emit("newMessage", {
-  ...message,
-  conversationId,
-})
-  const receiverSocketId = onlineUsers.get(receiverId)
-  if (receiverSocketId) {
-
-    io.to(receiverSocketId).emit(
-      "messageNotification",
-      message
-    )
-  }
+    ...message,
+    conversationId,
+  })
 }
 const typingStart = async (io: Server, socket: Socket, data: TypingPayload) => {
+  console.log("typingStart received", data)
   const userId = (socket as AuthenticatedSocket).user.id
   const user = await userRepositoryMethods.findById(userId)
   const username = user?.username
   const { conversationId } = data
   socket.to(`conversation-${conversationId}`).emit("userTyping",
-    {conversationId,
+    {
+      conversationId,
       userId,
       username,
       isTyping: true,
     })
-
+  console.log("userTyping emitted")
 }
 const typingStop = async (
   io: Server,
@@ -90,7 +90,8 @@ const typingStop = async (
   socket.to(`conversation-${conversationId}`)
     .emit(
       "userTyping",
-      {conversationId,
+      {
+        conversationId,
         userId,
         username,
         isTyping: false,
@@ -115,7 +116,8 @@ const markSeen = async (
   socket.to(`conversation-${conversationId}`)
     .emit(
       "messageSeen",
-      {conversationId,
+      {
+        conversationId,
         messageId,
         seenAt: updatedMessage.seenAt
       })
@@ -146,16 +148,11 @@ const deleteForEveryone = async (io: Server,
     )
   }
 
-  const deletedMessage = await messageRepositoryMethods.deleteForEveryone(message)
-  io.to(`conversation-${conversationId}`)
-    .emit(
-      "messageDeleted",
-      {conversationId,
-        messageId: deletedMessage.id,
-        deletedAt: deletedMessage.deletedAt,
-      })
-
-
+  await messageRepositoryMethods.deleteForEveryone(message.id)
+  io.to(`conversation-${conversationId}`).emit("messageDeleted", {
+    conversationId,
+    messageId,
+  })
 }
 const disconnect = async (io: Server, socket: Socket) => {
   let disconnectedUserId: number | null = null
@@ -260,9 +257,10 @@ const createConversation = async (
     return res.status(200).json({
       success: true,
       message: "Conversation already exists",
-      data: existingConversation,
+      data: {
+        conversationId: existingConversation.conversation.id,
+      },
     });
-
   }
 
 

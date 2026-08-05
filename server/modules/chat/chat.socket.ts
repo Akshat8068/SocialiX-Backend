@@ -22,7 +22,9 @@ export const registerChatSocket = (
 
   // User online (JWT middleware se user mil gaya)
   onlineUsers.set(socket.user.id, socket.id);
-
+  io.emit("userOnline", {
+    userId: socket.user.id,
+  })
   console.log(`User ${socket.user.id} online`);
 
   // Join Conversation
