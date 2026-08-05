@@ -43,11 +43,8 @@ const markSeen = async (message: Message): Promise<Message> => {
   return await messageRepository.save(message)
 }
 
-const deleteForEveryone = async (message: Message): Promise<Message> => {
-  message.isDeletedForEveryone = true
-  message.deletedAt = new Date()
-
-  return await messageRepository.save(message)
+const deleteForEveryone = async (messageId: number): Promise<void> => {
+  await messageRepository.delete(messageId)
 }
 
 const messageRepositoryMethods = {createMessage,findMessageById,
