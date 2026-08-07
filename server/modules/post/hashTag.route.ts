@@ -6,7 +6,8 @@ import hashTagController from "./hashTag.controller.js";
 const router=Router()
 
 router.post("/",authMiddleware,hashTagController.createHashTag)
-router.get("/",authMiddleware,hashTagController.getHashTag)
+router.get("/name",authMiddleware,hashTagController.getHashTag)
+router.get("/",authMiddleware,hashTagController.getAllHashtags)
 router.delete("/:hashtagId",authMiddleware,hashTagController.deleteHashTag)
 
 export default router

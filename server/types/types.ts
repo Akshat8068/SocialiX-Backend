@@ -86,6 +86,10 @@ export interface UpdatePost {
   hashtags?: number[]
 }
 
+export interface hashtagName{
+  name:string
+}
+
 export type CommentNode = Comment & {
   replies: CommentNode[]
 }

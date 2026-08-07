@@ -2,8 +2,6 @@ import type { NextFunction, Request, Response } from "express"
 import userRepositoryMethods from "../../repository/user.repository.js"
 import hashTagRepositoryMethods from "../../repository/hashTag.repository.js"
 import { AccoutType } from "../../entities/user.entity.js"
-import { ILike } from "typeorm"
-import { nextTick } from "node:process"
 
 const createHashTag = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -58,8 +56,8 @@ const createHashTag = async (req: Request, res: Response, next: NextFunction) =>
 }
 const getHashTag = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { hashTag } = req.body
-        const existHashTag = await hashTagRepositoryMethods.findByName(hashTag)
+        const { name} = req.body
+        const existHashTag = await hashTagRepositoryMethods.findByName(name)
         if (!existHashTag) {
             return res.status(400).json({
                 success: false,
@@ -130,5 +128,26 @@ const deleteHashTag = async (req: Request, res: Response, next: NextFunction) =>
 }
 
 
-const hashTagController = { createHashTag, getHashTag, deleteHashTag }
+const getAllHashtags=async(req:Request,res:Response,next:NextFunction)=>{
+    try {
+        const hashtags=await hashTagRepositoryMethods.getAllHashtags()
+        if(!hashtags){
+            return res.status(400).json({
+            success:true,
+            message:"somthing worng",
+            data:[]
+        })
+        }
+        return res.status(200).json({
+            success:true,
+            message:"all hashtags",
+            data:hashtags
+        })
+    } catch (error) {
+        next(error)
+    }
+}
+
+
+const hashTagController = { createHashTag, getHashTag,getAllHashtags, deleteHashTag }
 export default hashTagController
