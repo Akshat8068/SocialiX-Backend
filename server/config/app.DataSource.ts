@@ -28,7 +28,10 @@ const AppDataSource = new DataSource({
     logging: false,
     entities: [User, Otp,Follow,Post,PostMedia,Comment,Hashtag,Conversation,ConversationParticipant,PostHashTag,SavedPost,Message,Like],
     migrations: [],
-    subscribers: []
+    subscribers: [],
+    ssl: {
+    rejectUnauthorized: false,
+}
 })
 
 export default AppDataSource

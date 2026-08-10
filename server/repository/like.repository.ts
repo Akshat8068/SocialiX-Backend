@@ -2,7 +2,7 @@ import AppDataSource from "../config/app.DataSource.js";
 import { Like } from "../entities/like.entity.js";
 import { In } from "typeorm";
 
-const likeRepository=AppDataSource.getTreeRepository(Like)
+const likeRepository=AppDataSource.getRepository(Like)
 
 const findLike=async(userId:number,postId:number):Promise<Like|null>=>{
     return await likeRepository.findOne({
@@ -36,10 +36,7 @@ const getLikedlist=async(postId:number)=>{
         },
         select:{
             id:true,
-            user:{
-                id:true,username:true,
-                profilePicture:true
-            }
+            user:true
         },
         order:{
             createdAt:"DESC"

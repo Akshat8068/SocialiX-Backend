@@ -18,7 +18,6 @@ export const registerChatSocket = (
   io: Server,
   socket: AuthenticatedSocket
 ) => {
-  console.log(`User Connected: ${socket.id}`);
 
   // User online (JWT middleware se user mil gaya)
   onlineUsers.set(socket.user.id, socket.id);
@@ -30,9 +29,7 @@ export const registerChatSocket = (
   // Join Conversation
   socket.on("joinConversation", async (data) => {
 
-    const result = joinConversationSchema.safeParse(data);
-    console.log("joinConversation:", data);
-    console.log("joinConversation event received:", data);
+    const result = joinConversationSchema.safeParse(data)
     if (!result.success) {
       return socket.emit("error", {
         message: result.error.issues[0]?.message,
@@ -49,7 +46,6 @@ export const registerChatSocket = (
 
   // Send Message
   socket.on("sendMessage", async (data) => {
-    console.log("sendMessage event:", data);
     const result = sendMessageSchema.safeParse(data);
 
     if (!result.success) {

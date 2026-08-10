@@ -19,7 +19,6 @@ export const initializeSocket = (httpServer: HttpServer): Server => {
   
 io.use(socketAuthMiddleware)
   io.on("connection", (socket) => {
-    console.log(`Connected: ${socket.id}`);
 
     registerChatSocket(io, socket as AuthenticatedSocket);
   });

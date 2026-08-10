@@ -45,12 +45,7 @@ const deleteFollow = async (id: number): Promise<DeleteResult> => {
     return await followRepository.delete(id)
 
 }
-const isFriend = async (userId: number,otherUserId: number): Promise<boolean> => {
-  const friends = await getFriends(userId)
-  return friends.some(
-    (friend) => friend.following.id === otherUserId
-  )
-}
+
 
 const updateStatus = async (id: number, status: FollowStatus): Promise<Follow | null> => {
     await followRepository.update(id, { status })
@@ -127,7 +122,7 @@ const getFollowerCount=async(id:number)=>{
 
 const followRepositoryMethods = {getFollowerCount,getFollowingCount, findRelation,findById, createFollow,deleteFollow,
     updateStatus,getFollowers,getFollowing,getPendingRequests,
-    getSentRequests,isFollowing,isFriend
+    getSentRequests,isFollowing
  }
 
 export default followRepositoryMethods
