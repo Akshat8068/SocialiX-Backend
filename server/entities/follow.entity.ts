@@ -1,7 +1,7 @@
 import {Entity,PrimaryGeneratedColumn,Column,ManyToOne,JoinColumn,
   CreateDateColumn,  UpdateDateColumn,Unique,
   Index,} from "typeorm";
-import { User } from "./user.entity.js";
+import { User } from "./user.entity.js"
 import { FollowStatus } from "../types/types.js";
 
 
