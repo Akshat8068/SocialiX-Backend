@@ -1,10 +1,11 @@
 import {Entity,  PrimaryGeneratedColumn,Column,
   ManyToOne,JoinColumn,  CreateDateColumn,UpdateDateColumn,
+  Index,
 } from "typeorm";
 
 import { Conversation } from "./conversation.entity.js";
 import { User } from "./user.entity.js";
-
+@Index(["conversation", "createdAt"])
 @Entity("messages")
 export class Message {
   @PrimaryGeneratedColumn()

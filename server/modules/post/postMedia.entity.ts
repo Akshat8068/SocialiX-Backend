@@ -1,7 +1,8 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, Index, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Post } from "../../entities/post.entity.js";
 
 @Entity("PostMedias")
+@Index(["post"])
 export class PostMedia{
     @PrimaryGeneratedColumn()
     id!:number
