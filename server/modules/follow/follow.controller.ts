@@ -4,8 +4,6 @@ import { AccoutType, User } from "../../entities/user.entity.js"
 import { FOLLOW_ERRORS, FOLLOW_MESSAGES, FollowStatus } from "../../types/types.js"
 import followRepositoryMethods from "../../repository/follow.repository.js"
 import userRepositoryMethods from "../../repository/user.repository.js"
-import { fa } from "zod/locales"
-import { count } from "node:console"
 
 
 

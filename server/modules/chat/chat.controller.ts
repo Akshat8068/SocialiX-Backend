@@ -13,15 +13,11 @@ const joinConversation = async (io: Server, socket: Socket, data: JoinConversati
 
   socket.join(roomName)
 
-  console.log(
-    `${socket.id} joined ${roomName}`
-  )
   
   socket.emit("joinedConversation", {
     conversationId,
     message: "Joined conversation successfully",
   })
-console.log(socket.id, "joined", roomName)
 }
 
 const sendMessage = async (io: Server, socket: Socket, data: SendMessagePayload) => {
@@ -29,8 +25,6 @@ const sendMessage = async (io: Server, socket: Socket, data: SendMessagePayload)
   const senderId = (socket as AuthenticatedSocket).user.id
 
   const { conversationId, content, } = data
-  console.log("Inside sendMessage controller");
-  console.log(data);
   const createdMessage = await messageRepositoryMethods.createMessage({
     conversation: {
       id: conversationId,
@@ -44,7 +38,6 @@ const sendMessage = async (io: Server, socket: Socket, data: SendMessagePayload)
     deletedAt: null,
   })
 
-  console.log(createdMessage);
 
   const message = await messageRepositoryMethods.findMessageById(
     createdMessage.id
@@ -57,7 +50,6 @@ const sendMessage = async (io: Server, socket: Socket, data: SendMessagePayload)
     lastMessage: content,
     lastMessageAt: new Date(),
   })
-  console.log("Conversation Updated");
 
   io.to(`conversation-${conversationId}`).emit("newMessage", {
     ...message,
@@ -65,7 +57,6 @@ const sendMessage = async (io: Server, socket: Socket, data: SendMessagePayload)
   })
 }
 const typingStart = async (io: Server, socket: Socket, data: TypingPayload) => {
-  console.log("typingStart received", data)
   const userId = (socket as AuthenticatedSocket).user.id
   const user = await userRepositoryMethods.findById(userId)
   const username = user?.username
@@ -77,7 +68,6 @@ const typingStart = async (io: Server, socket: Socket, data: TypingPayload) => {
       username,
       isTyping: true,
     })
-  console.log("userTyping emitted")
 }
 const typingStop = async (
   io: Server,
@@ -266,13 +256,7 @@ const createConversation = async (
 
   // Create Conversation
   const conversation =
-    await conversationRepositoryMethods.createConversation({});
-  console.log({
-    senderId,
-    receiverId,
-    conversationId: conversation.id,
-  });
-  console.log("conversation", conversation)
+    await conversationRepositoryMethods.createConversation({})
   // Add participants
   await cPRepositoryMenthods.addParticipants([
     {

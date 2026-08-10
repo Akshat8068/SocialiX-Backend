@@ -56,7 +56,6 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
 const login = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { email, password }: login = req.body
-        console.log(req.body);
 
         const user = await userRepositoryMethods.findByEmail(email)
         if (!user) {

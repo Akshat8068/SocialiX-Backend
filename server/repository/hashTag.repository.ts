@@ -2,8 +2,6 @@ import { ILike, In, type Repository } from "typeorm"
 import { Hashtag } from "../modules/post/hashTag.entity.js"
 import AppDataSource from "../config/app.DataSource.js"
 import { PostHashTag } from "../modules/post/postHashTag.entity.js"
-import type { hashtagName } from "../types/types.js"
-
 const hashTagRepository:Repository<Hashtag>=AppDataSource.getRepository(Hashtag)
 const postHashTagRepository:Repository<PostHashTag>=AppDataSource.getRepository(PostHashTag)
 
@@ -20,10 +18,10 @@ const getAllHashtags=async()=>{
     })
 }
 
-const findByName=async(name:string):Promise<hashtagName|null>=>{
+const findByName = async (name: string): Promise<Hashtag | null> => {
     return await hashTagRepository.findOne({
-        where:{
-          name:ILike(name)
+        where: {
+            name: ILike(name)
         }
     })
 }
