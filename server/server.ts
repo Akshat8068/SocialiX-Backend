@@ -27,7 +27,7 @@ const httpServer=createServer(app)
 initializeSocket(httpServer)
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: ["https://sociali-x-frontend.vercel.app","http://localhost:3000"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
