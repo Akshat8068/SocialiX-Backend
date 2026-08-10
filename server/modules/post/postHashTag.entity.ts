@@ -1,8 +1,10 @@
-import { CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Hashtag } from "./hashTag.entity.js";
 import { Post } from "../../entities/post.entity.js";
 
 @Entity("PostHashTags")
+  @Index(["post"])
+@Index(["hashtag"])
 export class PostHashTag{
     @PrimaryGeneratedColumn()
     is!:number

@@ -2,7 +2,9 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  ManyToOne, JoinColumn,CreateDateColumn,} from "typeorm"
+  ManyToOne, JoinColumn, CreateDateColumn,
+  Index,
+} from "typeorm"
 import { User } from "./user.entity.js";
 
 @Entity("otp")
@@ -13,12 +15,13 @@ export class Otp {
   @ManyToOne(() => User, {
     onDelete: "CASCADE",
   })
-    @Column({type:"int"})
+    @Index()
+  @Column({ type: "int" })
   userId!: number;
   @JoinColumn({ name: "userId" })
   user!: User;
 
-  
+
 
   @Column({
     type: "varchar",

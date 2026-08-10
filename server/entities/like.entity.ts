@@ -1,9 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn, Unique } from "typeorm"
+import { Entity, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn, Unique, Index } from "typeorm"
 import { User } from "./user.entity.js"
 import { Post } from "./post.entity.js"
 
 @Entity("likes")
 @Unique(["user", "post"])
+@Index(["post"])
 export class Like {
     @PrimaryGeneratedColumn()
     id!: number

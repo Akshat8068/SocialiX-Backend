@@ -4,12 +4,15 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  Index,
 } from "typeorm";
 
 import { Conversation } from "./conversation.entity.js";
 import { User } from "./user.entity.js";
 
 @Entity("conversation_participants")
+@Index(["user"])
+@Index(["conversation"])
 export class ConversationParticipant {
   @PrimaryGeneratedColumn()
   id!: number

@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, UpdateDateColumn, CreateDateColumn, OneToMany } from "typeorm"
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, UpdateDateColumn, CreateDateColumn, OneToMany, Index } from "typeorm"
 import { PostVisibility } from "../types/types.js"
 import { User } from "./user.entity.js"
 import { PostMedia } from "../modules/post/postMedia.entity.js"
@@ -19,6 +19,7 @@ export class Post {
     @Column({ type: "enum", enum: PostVisibility, default: PostVisibility.PUBLIC })
     visibility?: PostVisibility
 
+    @Index()
     @ManyToOne(() => User, (user) => user.posts, {
         onDelete: "CASCADE"
     })

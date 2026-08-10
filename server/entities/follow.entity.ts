@@ -1,5 +1,6 @@
 import {Entity,PrimaryGeneratedColumn,Column,ManyToOne,JoinColumn,
-  CreateDateColumn,  UpdateDateColumn,Unique,} from "typeorm";
+  CreateDateColumn,  UpdateDateColumn,Unique,
+  Index,} from "typeorm";
 import { User } from "./user.entity.js";
 import { FollowStatus } from "../types/types.js";
 
@@ -13,12 +14,14 @@ export class Follow {
   @ManyToOne(() => User, (user) => user.following, {
     onDelete: "CASCADE",
   })
+    @Index()
   @JoinColumn({ name: "follower_id" })
   follower!: User;
 
   @ManyToOne(() => User, (user) => user.followers, {
     onDelete: "CASCADE",
   })
+    @Index()
   @JoinColumn({ name: "following_id" })
   following!: User;
 

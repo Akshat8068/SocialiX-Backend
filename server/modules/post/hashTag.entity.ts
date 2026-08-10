@@ -23,5 +23,5 @@ export class Hashtag{
 @Column({type:"int", default: 0 })
 postCount!: number;
   @CreateDateColumn()
-  createdAt: Date
+  createdAt!: Date
 }
