@@ -50,7 +50,7 @@ const getAllSaved=async(req:Request,res:Response,next:NextFunction)=>{
 
 const getSingleSaved=async(req:Request,res:Response,next:NextFunction)=>{
 try{
-    const postId=Number(req.params.id)
+    const postId=Number(req.params.postId)
     const savedPost=await savedRepositoryMethods.findByUserAndPost(req.user.id,postId)
 
     return res.status(200).json({
