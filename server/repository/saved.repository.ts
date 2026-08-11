@@ -44,8 +44,12 @@ const allSaved=async(id:number):Promise<SavedPost[]>=>{
         where:{
             user:{id}
         },relations:{
-            post:true
-        },
+            post: {
+                media: true,
+                user: true,
+                hashtags: {hashtag: true,}
+        }
+    },
         order:{
             createdAt:"DESC"
         }
