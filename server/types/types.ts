@@ -114,8 +114,7 @@ export interface TypingPayload {
 }
 
 export interface MarkSeenPayload {
-  conversationId: number,
-  messageId: number
+  conversationId: number;
 }
 
 export interface DeleteForEveryonePayload {

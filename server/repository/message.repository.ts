@@ -42,12 +42,42 @@ const markSeen = async (message: Message): Promise<Message> => {
   message.seenAt = new Date()
   return await messageRepository.save(message)
 }
+const markConversationMessagesAsSeen = async (
+  conversationId: number,
+  userId: number
+) => {
+  const seenAt = new Date();
+
+  await messageRepository
+    .createQueryBuilder()
+    .update()
+    .set({
+      seenAt,
+    })
+    .where(
+      "conversation_id = :conversationId",
+      { conversationId }
+    )
+    .andWhere(
+      "sender_id != :userId",
+      { userId }
+    )
+    .andWhere(
+      "seen_at IS NULL"
+    )
+    .andWhere(
+      "is_deleted_for_everyone = false"
+    )
+    .execute();
+
+  return seenAt;
+};
 
 const deleteForEveryone = async (messageId: number): Promise<void> => {
   await messageRepository.delete(messageId)
 }
 
-const messageRepositoryMethods = {createMessage,findMessageById,
+const messageRepositoryMethods = {createMessage,markConversationMessagesAsSeen,findMessageById,
   getConversationMessages,markSeen,deleteForEveryone,}
 
 export default messageRepositoryMethods

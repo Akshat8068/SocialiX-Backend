@@ -13,7 +13,7 @@ const joinConversation = async (io: Server, socket: Socket, data: JoinConversati
 
   socket.join(roomName)
 
-  
+
   socket.emit("joinedConversation", {
     conversationId,
     message: "Joined conversation successfully",
@@ -92,25 +92,25 @@ const markSeen = async (
   socket: Socket,
   data: MarkSeenPayload
 ) => {
-  const { messageId, conversationId, } = data
-  const message = await messageRepositoryMethods.findMessageById(messageId)
-  if (!message) {
-    return socket.emit(
-      "error",
-      {
-        message: "Message not found"
-      }
-    )
-  }
-  const updatedMessage = await messageRepositoryMethods.markSeen(message)
-  socket.to(`conversation-${conversationId}`)
-    .emit(
-      "messageSeen",
-      {
+  const userId =
+    (socket as AuthenticatedSocket).user.id
+
+  const { conversationId } = data;
+
+  const seenAt =
+    await messageRepositoryMethods
+      .markConversationMessagesAsSeen(
         conversationId,
-        messageId,
-        seenAt: updatedMessage.seenAt
-      })
+        userId
+      );
+
+  socket
+    .to(`conversation-${conversationId}`)
+    .emit("conversationSeen", {
+      conversationId,
+      userId,
+      seenAt,
+    })
 
 }
 const deleteForEveryone = async (io: Server,

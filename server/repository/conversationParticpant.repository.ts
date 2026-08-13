@@ -2,8 +2,16 @@ import type { DeepPartial } from "typeorm";
 import AppDataSource from "../config/app.DataSource.js";
 import { ConversationParticipant } from "../entities/ConversationParticipant.entity.js";
 import { In } from "typeorm"
+import { Message } from "../entities/message.entity.js";
+interface ConversationWithUnreadCount {
+  id: number;
+  joinedAt: Date;
 
-const cPRepository=AppDataSource.getRepository(ConversationParticipant)
+  conversation: ConversationParticipant["conversation"];
+
+  unreadCount: number;
+}
+const cPRepository = AppDataSource.getRepository(ConversationParticipant)
 const addParticipants = async (data: DeepPartial<ConversationParticipant>[]): Promise<ConversationParticipant[]> => {
   const participants = cPRepository.create(data)
 
@@ -12,7 +20,7 @@ const addParticipants = async (data: DeepPartial<ConversationParticipant>[]): Pr
 
 
 
-const findConversationBetweenUsers = async (userOneId: number,userTwoId: number): Promise<ConversationParticipant | null> => {
+const findConversationBetweenUsers = async (userOneId: number, userTwoId: number): Promise<ConversationParticipant | null> => {
   return await cPRepository
     .createQueryBuilder("cp1")
 
@@ -44,28 +52,72 @@ const findConversationBetweenUsers = async (userOneId: number,userTwoId: number)
     .getOne()
 }
 
-const getUserConversations = async (userId: number): Promise<ConversationParticipant[]> => {
-  return await cPRepository.find({
-    where: {
-      user: {
-        id: userId,
-      },
-    },
-    relations: {
-      conversation: {
-        participants: {
-          user: true,
-        },
-      },
-    },
-    order: {
-      conversation: {
-        lastMessageAt: "DESC",
-      },
-    },
-  })
-}
+const getUserConversations = async (userId: number) => {
+  const { entities, raw } = await cPRepository
+    .createQueryBuilder("participant")
 
-const cPRepositoryMenthods={addParticipants,findConversationBetweenUsers,getUserConversations}
+    .leftJoinAndSelect(
+      "participant.conversation",
+      "conversation"
+    )
+
+    .leftJoinAndSelect(
+      "conversation.participants",
+      "participants"
+    )
+
+    .leftJoinAndSelect(
+      "participants.user",
+      "user"
+    )
+
+    .where(
+      "participant.user_id = :userId",
+      { userId }
+    )
+
+    .addSelect(
+      (subQuery) => {
+        return subQuery
+          .select("COUNT(message.id)")
+          .from(Message, "message")
+          .where(
+            "message.conversation_id = conversation.id"
+          )
+          .andWhere(
+            "message.sender_id != :userId"
+          )
+          .andWhere(
+            "message.seen_at IS NULL"
+          )
+          .andWhere(
+            "message.is_deleted_for_everyone = false"
+          );
+      },
+      "unreadCount"
+    )
+
+    .setParameter("userId", userId)
+
+    .orderBy(
+      "conversation.lastMessageAt",
+      "DESC"
+    )
+
+    .getRawAndEntities()
+  const unreadCountMap = new Map<number, number>()
+  raw.forEach((item) => {
+    unreadCountMap.set(
+      Number(item.conversation_id),
+      Number(item.unreadCount ?? 0)
+    );
+  })
+  return entities.map((participant) => ({
+    ...participant,
+    unreadCount:
+      unreadCountMap.get(participant.conversation.id) ?? 0,
+  }))
+}
+const cPRepositoryMenthods = { addParticipants, findConversationBetweenUsers, getUserConversations }
 
 export default cPRepositoryMenthods

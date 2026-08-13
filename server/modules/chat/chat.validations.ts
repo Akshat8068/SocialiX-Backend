@@ -36,11 +36,6 @@ export const markSeenSchema = z.object({
     .number()
     .int()
     .positive(),
-
-  messageId: z
-    .number()
-    .int()
-    .positive(),
 })
 
 export const deleteForEveryoneSchema = z.object({
