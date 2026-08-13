@@ -1,6 +1,7 @@
 
 import type { Socket } from "socket.io"
-import type {  Comment  } from "../entities/comment.entity.js"
+import type { Comment } from "../modules/comment/comment.entity.js"
+
 export interface register{
     fullname:string,
     email:string,
@@ -130,4 +131,50 @@ export interface AuthenticatedSocket extends Socket {
   user: {
     id: number;
   };
+}
+export enum NotificationType {
+  FOLLOW = "FOLLOW",
+  FOLLOW_REQUEST = "FOLLOW_REQUEST",
+  FOLLOW_ACCEPTED = "FOLLOW_ACCEPTED",
+  LIKE = "LIKE",
+  COMMENT = "COMMENT",
+  MENTION = "MENTION",
+  MESSAGE = "MESSAGE",
+  SHARE = "SHARE",
+}
+export interface CreateNotificationData {
+  recipientId: number;
+  senderId: number;
+
+  type: NotificationType;
+
+  postId?: number;
+  commentId?: number;
+  conversationId?: number;
+
+  message?: string;
+}
+
+export interface NotificationQuery {
+  page?: number;
+  limit?: number;
+}
+
+export interface NotificationSocketPayload {
+  id: number;
+
+  recipientId: number;
+  senderId: number;
+
+  type: NotificationType;
+
+  postId: number | null;
+  commentId: number | null;
+  conversationId: number | null;
+
+  message: string | null;
+
+  isRead: boolean;
+
+  createdAt: Date;
 }

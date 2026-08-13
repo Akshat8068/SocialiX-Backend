@@ -1,9 +1,10 @@
 import type { NextFunction, Request, Response } from "express"
 import { json, number, success } from "zod"
-import { AccoutType, User } from "../../entities/user.entity.js"
+import { AccoutType, User } from "../users/user.entity.js"
 import { FOLLOW_ERRORS, FOLLOW_MESSAGES, FollowStatus } from "../../types/types.js"
-import followRepositoryMethods from "../../repository/follow.repository.js"
-import userRepositoryMethods from "../../repository/user.repository.js"
+import followRepositoryMethods from "./follow.repository.js"
+import userRepositoryMethods from "../users/user.repository.js"
+
 
 
 

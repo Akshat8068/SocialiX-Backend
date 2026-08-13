@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
-import postRepositoryMethods from "../../repository/post.repository.js";
-import savedRepositoryMethods from "../../repository/saved.repository.js";
+import postRepositoryMethods from "../post/post.repository.js";
+import savedRepositoryMethods from "./saved.repository.js";
 
 const savedPost = async (req: Request, res: Response, next: NextFunction) => {
     try {

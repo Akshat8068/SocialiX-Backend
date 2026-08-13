@@ -1,9 +1,9 @@
 import type { NextFunction, Request, Response } from "express"
-import userRepositoryMethods from "../../repository/user.repository.js"
 import cloudinaryMethod from "../../utils/cloudinary.utils.js"
-import postRepositoryMethods from "../../repository/post.repository.js"
-import followRepositoryMethods from "../../repository/follow.repository.js"
-import likeRepositoryMethod from "../../repository/like.repository.js"
+import postRepositoryMethods from "../post/post.repository.js"
+import followRepositoryMethods from "../follow/follow.repository.js"
+import likeRepositoryMethod from "../like/like.repository.js"
+import userRepositoryMethods from "./user.repository.js"
 
 
 

@@ -1,11 +1,11 @@
 import type { Server, Socket } from "socket.io"
-import messageRepositoryMethods from "../../repository/message.repository.js"
+import messageRepositoryMethods from "./repository/message.repository.js"
 import { onlineUsers } from "../../config/socket.config.js"
-import conversationRepositoryMethods from "../../repository/conversation.repository.js"
+import conversationRepositoryMethods from "./repository/conversation.repository.js"
 import type { AuthenticatedSocket, DeleteForEveryonePayload, JoinConversationPayload, MarkSeenPayload, SendMessagePayload, TypingPayload } from "../../types/types.js"
-import userRepositoryMethods from "../../repository/user.repository.js"
-import cPRepositoryMenthods from "../../repository/conversationParticpant.repository.js"
+import cPRepositoryMenthods from "./repository/conversationParticpant.repository.js"
 import type { Request, Response } from "express"
+import userRepositoryMethods from "../users/user.repository.js"
 
 const joinConversation = async (io: Server, socket: Socket, data: JoinConversationPayload) => {
   const { conversationId } = data

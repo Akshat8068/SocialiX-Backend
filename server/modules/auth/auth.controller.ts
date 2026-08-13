@@ -1,12 +1,13 @@
 import type { NextFunction, Request, Response } from "express";
 import type { login, register } from "../../types/types.js";
-import userRepositoryMethods from "../../repository/user.repository.js";
-import otpRepositoryMethods from "../../repository/otp.repository.js";
+
+import otpRepositoryMethods from "./otp.repository.js";
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import { generateAccessToken, generateRefershToken } from "../../utils/utils.js";
 import { Accesscookiesoptions, Refreshcookiesoptions } from "../../config/cookie.config.js";
 import { sendOtp } from "../../utils/utils.js";
+import userRepositoryMethods from "../users/user.repository.js";
 
 
 

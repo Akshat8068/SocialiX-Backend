@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken"
-import otpRepositoryMethods from "../repository/otp.repository.js";
+import otpRepositoryMethods from "../modules/auth/otp.repository.js";
 import { sendOtpEmail } from "./mail.utils.js";
 
 export const generateAccessToken = (id:number) => {
