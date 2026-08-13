@@ -87,9 +87,6 @@ const getUserPosts = async (req: Request, res: Response, next: NextFunction) => 
         }
         const posts = await postRepositoryMethods.getUserPosts(userId)
         for (const post of posts) {
-             console.log("Post ID:", post.id);
-    console.log("Post visibility:", post.visibility);
-    console.log("Post visibility type:", typeof post.visibility);
 
             if (post.user.id !== currUser.id) {
                 switch (post.visibility) {

@@ -1,4 +1,4 @@
-import express ,{type Request,type Response} from "express"
+import express, { type Request, type Response } from "express"
 import dotenv from "dotenv"
 import cors from "cors"
 import DBConnection from "./config/db.config.js"
@@ -18,42 +18,42 @@ import { initializeSocket } from "./config/socket.config.js"
 import errorMiddleware from "./middlewares/error.middleware.js"
 
 
- dotenv.config()
+dotenv.config()
 
- const app=express()
- const port =process.env.PORT
+const app = express()
+const port = process.env.PORT
 await DBConnection()
-const httpServer=createServer(app)
+const httpServer = createServer(app)
 initializeSocket(httpServer)
 app.use(
   cors({
-    origin: ["https://sociali-x-frontend.vercel.app","http://localhost:3000"],
+    origin: ["https://sociali-x-frontend.vercel.app", "http://localhost:3000"],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 )
 app.use(express.json())
-app.use(express.urlencoded({extended:true}))
+app.use(express.urlencoded({ extended: true }))
 app.use(coookieParser())
 
-app.use("/api/auth",authRoute)
-app.use("/api/user",userRoute)
-app.use("/api/follow",folowRoute)
-app.use("/api/post",postRoute)
-app.use("/api/hashtag",hashTagRoute)
-app.use("/api/likes",likeRoute)
-app.use("/api/comment",commentRoute)
-app.use("/api/saved",savedRoute)
-app.use("/api/chat",chatRoutes)
+app.use("/api/auth", authRoute)
+app.use("/api/user", userRoute)
+app.use("/api/follow", folowRoute)
+app.use("/api/post", postRoute)
+app.use("/api/hashtag", hashTagRoute)
+app.use("/api/likes", likeRoute)
+app.use("/api/comment", commentRoute)
+app.use("/api/saved", savedRoute)
+app.use("/api/chat", chatRoutes)
 
- app.get("/",(req:Request,res:Response)=>{
-    res.status(200).json({
-        sucess:true,
-        message:"Socialix Backend"
-    })
- })
+app.get("/", (req: Request, res: Response) => {
+  res.status(200).json({
+    sucess: true,
+    message: "Socialix Backend"
+  })
+})
 app.use(errorMiddleware)
- httpServer.listen(port,()=>{
-    console.log(`server is running on port ${port}`)
- })
+httpServer.listen(port, () => {
+  console.log(`server is running on port ${port}`)
+})
