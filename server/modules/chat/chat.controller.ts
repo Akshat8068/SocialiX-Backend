@@ -2,10 +2,11 @@ import type { Server, Socket } from "socket.io"
 import messageRepositoryMethods from "./repository/message.repository.js"
 import { onlineUsers } from "../../config/socket.config.js"
 import conversationRepositoryMethods from "./repository/conversation.repository.js"
-import type { AuthenticatedSocket, DeleteForEveryonePayload, JoinConversationPayload, MarkSeenPayload, SendMessagePayload, TypingPayload } from "../../types/types.js"
+import { NotificationType, type AuthenticatedSocket, type DeleteForEveryonePayload, type JoinConversationPayload, type MarkSeenPayload, type SendMessagePayload, type TypingPayload } from "../../types/types.js"
 import cPRepositoryMenthods from "./repository/conversationParticpant.repository.js"
 import type { Request, Response } from "express"
 import userRepositoryMethods from "../users/user.repository.js"
+import notificationController from "../notification/notification.controller.js"
 
 const joinConversation = async (io: Server, socket: Socket, data: JoinConversationPayload) => {
   const { conversationId } = data
@@ -50,6 +51,19 @@ const sendMessage = async (io: Server, socket: Socket, data: SendMessagePayload)
     lastMessage: content,
     lastMessageAt: new Date(),
   })
+  const participants =await cPRepositoryMenthods.getConversationParticipants(conversationId)
+  const receiver = participants.find((participant) =>
+      participant.user.id !== senderId
+  )
+  if (receiver) {
+    await notificationController.createNotification({
+      recipientId: receiver.user.id,
+      senderId,
+      type: NotificationType.MESSAGE,
+      conversationId,
+      message: content,
+    })
+  }
 
   io.to(`conversation-${conversationId}`).emit("newMessage", {
     ...message,

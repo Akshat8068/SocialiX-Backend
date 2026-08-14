@@ -14,6 +14,7 @@ import { PostHashTag } from "../modules/post/postHashTag.entity.js"
 import { SavedPost } from "../modules/saved/saved.entity.js"
 import { Message } from "../modules/chat/entity/message.entity.js"
 import { Like } from "../modules/like/like.entity.js"
+import { Notification } from "../modules/notification/notification.entity.js"
 
 dotenv.config()
 
@@ -28,7 +29,7 @@ const AppDataSource = new DataSource({
     synchronize: true,
     logging: false,
     entities: [User, Otp,Follow,Post,PostMedia,Comment,Hashtag,Conversation,
-        ConversationParticipant,PostHashTag,SavedPost,Message,Like],
+        ConversationParticipant,PostHashTag,SavedPost,Message,Like,Notification],
     migrations: [],
     subscribers: [],
     ssl: {

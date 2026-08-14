@@ -138,9 +138,7 @@ export enum NotificationType {
   FOLLOW_ACCEPTED = "FOLLOW_ACCEPTED",
   LIKE = "LIKE",
   COMMENT = "COMMENT",
-  MENTION = "MENTION",
   MESSAGE = "MESSAGE",
-  SHARE = "SHARE",
 }
 export interface CreateNotificationData {
   recipientId: number;

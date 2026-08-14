@@ -1,9 +1,10 @@
 import type { NextFunction, Request, Response } from "express"
 import { json, number, success } from "zod"
 import { AccoutType, User } from "../users/user.entity.js"
-import { FOLLOW_ERRORS, FOLLOW_MESSAGES, FollowStatus } from "../../types/types.js"
+import { FOLLOW_ERRORS, FOLLOW_MESSAGES, FollowStatus, NotificationType } from "../../types/types.js"
 import followRepositoryMethods from "./follow.repository.js"
 import userRepositoryMethods from "../users/user.repository.js"
+import notificationController from "../notification/notification.controller.js"
 
 
 
@@ -49,6 +50,20 @@ const followUser = async (req: Request, res: Response,next:NextFunction) => {
         following: { id: followingId } as User,
         status,
     })
+    await notificationController.createNotification({
+    recipientId: followingId,
+    senderId: reqUserId,
+
+    type:
+        status === FollowStatus.ACCEPTED
+            ? NotificationType.FOLLOW
+            : NotificationType.FOLLOW_REQUEST,
+
+    message:
+        status === FollowStatus.ACCEPTED
+            ? `${req.user.username} started following you`
+            : `${req.user.username} sent you a follow request`
+})
 
     return res.status(201).json({
         success: true,
@@ -127,6 +142,12 @@ const acceptRequest = async (req: Request, res: Response,next:NextFunction) => {
         })
     }
     const updateFollow = await followRepositoryMethods.updateStatus(followId, FollowStatus.ACCEPTED)
+    await notificationController.createNotification({
+    recipientId: requestAccept.follower.id,
+    senderId: req.user.id,
+    type: NotificationType.FOLLOW_ACCEPTED,
+    message: `${req.user.username} accepted your follow request`
+})
     return res.status(200).json({
         success: true,
         message: FOLLOW_MESSAGES.REQUEST_ACCEPTED,

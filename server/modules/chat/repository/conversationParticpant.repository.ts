@@ -3,14 +3,14 @@ import AppDataSource from "../../../config/app.DataSource.js";
 import { ConversationParticipant } from "../entity/ConversationParticipant.entity.js";
 import { Message } from "../entity/message.entity.js";
 
-interface ConversationWithUnreadCount {
-  id: number;
-  joinedAt: Date;
+// interface ConversationWithUnreadCount {
+//   id: number;
+//   joinedAt: Date;
 
-  conversation: ConversationParticipant["conversation"];
+//   conversation: ConversationParticipant["conversation"];
 
-  unreadCount: number;
-}
+//   unreadCount: number;
+// }
 const cPRepository = AppDataSource.getRepository(ConversationParticipant)
 const addParticipants = async (data: DeepPartial<ConversationParticipant>[]): Promise<ConversationParticipant[]> => {
   const participants = cPRepository.create(data)
@@ -51,7 +51,20 @@ const findConversationBetweenUsers = async (userOneId: number, userTwoId: number
 
     .getOne()
 }
-
+const getConversationParticipants = async (
+  conversationId: number
+) => {
+  return await cPRepository.find({
+    where: {
+      conversation: {
+        id: conversationId,
+      },
+    },
+    relations: {
+      user: true,
+    },
+  });
+};
 const getUserConversations = async (userId: number) => {
   const { entities, raw } = await cPRepository
     .createQueryBuilder("participant")
@@ -118,6 +131,6 @@ const getUserConversations = async (userId: number) => {
       unreadCountMap.get(participant.conversation.id) ?? 0,
   }))
 }
-const cPRepositoryMenthods = { addParticipants, findConversationBetweenUsers, getUserConversations }
+const cPRepositoryMenthods = { addParticipants,getConversationParticipants, findConversationBetweenUsers, getUserConversations }
 
 export default cPRepositoryMenthods

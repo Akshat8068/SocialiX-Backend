@@ -159,3 +159,5 @@ const deleteNotification = async (req: Request,res: Response,next:NextFunction) 
 }
 
 const notificationController={createNotification,getUnreadCount,deleteNotification,markNotificationAsRead,getNotifications,markAllNotificationsAsRead}
+
+export default notificationController

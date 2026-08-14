@@ -14,7 +14,7 @@ export class Notification{
   id!: number;
 
   // User who receives the notification
-  @Column()
+  @Column({type:"int"})
   recipientId!: number;
 
   @ManyToOne(() => User, {
@@ -23,8 +23,8 @@ export class Notification{
   @JoinColumn({ name: "recipientId" })
   recipient!: User;
 
-  // User who performs the action
-  @Column()
+
+  @Column({type:"int"})
   senderId!: number;
 
   @ManyToOne(() => User, {
@@ -39,8 +39,7 @@ export class Notification{
   })
   type!: NotificationType;
 
-  // Related post
-  @Column({
+  @Column({ type:"int",
     nullable: true,
   })
   postId!: number | null;
@@ -53,8 +52,8 @@ export class Notification{
   post!: Post | null;
 
   // Related comment
-  @Column({
-    nullable: true,
+  @Column({type:"int",
+    nullable: true
   })
   commentId!: number | null;
 
@@ -66,7 +65,7 @@ export class Notification{
   comment!: Comment | null;
 
   // Related conversation for MESSAGE notifications
-  @Column({
+  @Column({type:"int",
     nullable: true,
   })
   conversationId!: number | null;
@@ -85,7 +84,7 @@ export class Notification{
   })
   message!: string | null;
 
-  @Column({
+  @Column({type:"boolean",
     default: false,
   })
   isRead!: boolean;

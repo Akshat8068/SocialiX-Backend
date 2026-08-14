@@ -13,6 +13,7 @@ import likeRoute from "./modules/like/like.route.js"
 import commentRoute from "./modules/comment/comment.route.js"
 import savedRoute from "./modules/saved/saved.route.js"
 import chatRoutes from "./modules/chat/chat.route.js"
+import notificationRoutes from"./modules/notification/notification.route.js"
 import { createServer } from "http"
 import { initializeSocket } from "./config/socket.config.js"
 import errorMiddleware from "./middlewares/error.middleware.js"
@@ -46,7 +47,7 @@ app.use("/api/likes", likeRoute)
 app.use("/api/comment", commentRoute)
 app.use("/api/saved", savedRoute)
 app.use("/api/chat", chatRoutes)
-
+app.use("/api/notification",notificationRoutes)
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     sucess: true,
