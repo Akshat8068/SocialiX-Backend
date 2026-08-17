@@ -1,30 +1,15 @@
-import nodemailer from "nodemailer";
-import dns from "dns"
-dns.setDefaultResultOrder("ipv4first");
-const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-    },
-});
-transporter.verify((error, success) => {
-    if (error) {
-        console.log(error);
-    } 
-});
-console.log("EMAIL_USER exists:", !!process.env.EMAIL_USER);
-console.log("EMAIL_PASSWORD exists:", !!process.env.EMAIL_PASSWORD);
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
 export const sendOtpEmail = async (
     email: string,
     subject: string,
     otp: string
 ): Promise<void> => {
-    await transporter.sendMail({
-        from: `"SocialiX" <${process.env.EMAIL_USER}>`,
-        to: email,
+    const { data, error } = await resend.emails.send({
+        from: "SocialiX <onboarding@resend.dev>",
+        to: ["akshatyadav@thoughtwin.com"],
         subject,
         html: `
             <div style="font-family: Arial, sans-serif; max-width:600px; margin:auto;">
@@ -45,6 +30,12 @@ export const sendOtpEmail = async (
                 <p>Thanks,<br/>SocialiX Team</p>
             </div>
         `,
-    });
-};
+    })
 
+    if (error) {
+        console.error("Resend email error:", error)
+        throw new Error(error.message)
+    }
+
+    console.log("OTP email sent:", data)
+};

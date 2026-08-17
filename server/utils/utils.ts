@@ -19,7 +19,7 @@ export const generateRefershToken = (id:number) => {
     return token
 }
 export const generateOtp = (): string => {
-    return Math.floor(1000 + Math.random() * 9999).toString();
+    return Math.floor(1000 + Math.random() * 9000).toString()
 };
 
 export const sendOtp = async (userId: number, email: string, subject: string): Promise<void> => {
