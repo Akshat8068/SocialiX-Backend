@@ -12,13 +12,12 @@ import { User } from "../users/user.entity.js";
 export class Otp {
   @PrimaryGeneratedColumn()
   id!: string;
-
+  @Index()
+  @Column({ type: "int" })
+  userId!: number;
   @ManyToOne(() => User, {
     onDelete: "CASCADE",
   })
-    @Index()
-  @Column({ type: "int" })
-  userId!: number;
   @JoinColumn({ name: "userId" })
   user!: User;
 
