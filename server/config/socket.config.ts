@@ -1,8 +1,8 @@
 import { Server } from "socket.io";
 import type { Server as HttpServer } from "http";
-import { registerChatSocket } from "../modules/chat/chat.socket.js";
 import { socketAuthMiddleware } from "../middlewares/socketAuth.middleware.js";
 import type { AuthenticatedSocket } from "../types/types.js";
+import { registerChatSocket } from "../modules/chat/socket/chat.socket.js";
 
 let io: Server;
 
@@ -16,9 +16,13 @@ export const initializeSocket = (httpServer: HttpServer): Server => {
       credentials: true,
     },
   });
-  
-io.use(socketAuthMiddleware)
+
+  io.use(socketAuthMiddleware)
   io.on("connection", (socket) => {
+
+    const userId = (socket as AuthenticatedSocket).user.id;
+
+    socket.join(`user:${userId}`);
 
     registerChatSocket(io, socket as AuthenticatedSocket);
   });

@@ -1,7 +1,7 @@
 import type { Socket } from "socket.io";
 import jwt from "jsonwebtoken";
 import {parseCookie} from "cookie";
-import userRepositoryMethods from "../repository/user.repository.js";
+import userRepositoryMethods from "../modules/users/user.repository.js";
 interface AuthenticatedSocket extends Socket {
   user: {
     id: number

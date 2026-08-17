@@ -1,11 +1,11 @@
 import type { NextFunction, Request, Response } from "express"
-import userRepositoryMethods from "../../repository/user.repository.js"
-import postRepositoryMethods from "../../repository/post.repository.js"
-import hashTagRepositoryMethods from "../../repository/hashTag.repository.js"
 import cloudinaryMethod from "../../utils/cloudinary.utils.js"
-import followRepositoryMethods from "../../repository/follow.repository.js"
+import followRepositoryMethods from "../follow/follow.repository.js"
 import { PostVisibility } from "../../types/types.js"
-import likeRepositoryMethod from "../../repository/like.repository.js"
+import likeRepositoryMethod from "../like/like.repository.js"
+import postRepositoryMethods from "./post.repository.js"
+import hashTagRepositoryMethods from "./hashtag/hashTag.repository.js"
+import userRepositoryMethods from "../users/user.repository.js"
 
 
 const createPost = async (req: Request, res: Response, next: NextFunction) => {
@@ -411,5 +411,5 @@ const getHomeFeed = async (req: Request, res: Response, next: NextFunction) => {
 }
 
 
-const postController = { createPost, getHomeFeed, getUserPosts, updatePost, getUserPost, getPost, deletePost }
+const postController = { createPost, getHomeFeed,   getUserPosts, updatePost, getUserPost, getPost, deletePost }
 export default postController

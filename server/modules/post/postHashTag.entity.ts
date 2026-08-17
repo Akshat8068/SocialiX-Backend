@@ -1,6 +1,6 @@
 import { CreateDateColumn, Entity, Index, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Hashtag } from "./hashTag.entity.js";
-import { Post } from "../../entities/post.entity.js";
+import { Post } from "./post.entity.js";
+import { Hashtag } from "./hashtag/hashTag.entity.js";
 
 @Entity("PostHashTags")
   @Index(["post"])
