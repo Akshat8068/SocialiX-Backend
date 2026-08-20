@@ -17,6 +17,20 @@ const register = async (req: Request, res: Response, next: NextFunction) => {
 
         const existEmail = await userRepositoryMethods.findByEmail(email)
         if (existEmail) {
+            if (!existEmail.isVerified) {
+
+                await sendOtp(
+                    existEmail.id,
+                    existEmail.email,
+                    "Verify your SocialiX account"
+                )
+
+                return res.status(200).json({
+                    success: true,
+                    message:
+                        "Account already exists but email is not verified. A new OTP has been sent."
+                })
+            }
             return res.status(409).json({
                 success: false,
                 message: "Email Alreday Exists"
@@ -259,7 +273,7 @@ const resendEmail = async (req: Request, res: Response, next: NextFunction) => {
                 message: "Email Alreday Exists"
             })
         }
-        if (!user.isVerified) {
+        if (user.isVerified) {
             return res.status(400).json({
                 success: false,
                 message: "Email already verified"
